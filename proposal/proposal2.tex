@@ -23,9 +23,10 @@
 
 \begin{abstract}
 We would like to work with a dataset provided by Kaggle, containing data
-produced at the Large Hadron Collider (LHC). The objective of the Kaggle
-competition was to discover proof of a phenomenon that scientists still cannot
-explain: the charged lepton flavour violation.
+produced at the Large Hadron Collider (LHC), used for the competition
+\textbf{Flavours of Physics}\footnote{\url{https://www.kaggle.com/c/flavours-of-physics}}.
+The objective of the Kaggle competition was to discover proof of a phenomenon
+that scientists still cannot explain: the charged lepton flavour violation.
 \end{abstract}
 
 \section{Flavours of Physics}
@@ -91,7 +92,36 @@ label. Follows a list of available features for training:
 	\item \texttt{CDF1} - cone isolation variable;
 	\item \texttt{CDF2} - cone isolation variable;
 	\item \texttt{CDF3} - cone isolation variable;
-	\item \dots; % TODO complete the list
+	\item \texttt{production} - source of $\tau$ (\textit{absent from test data});
+	\item \texttt{ISO\_SumBDT} - track isolation variable;
+	\item \texttt{p0\_IsoBDT} - track isolation variable;
+	\item \texttt{p1\_IsoBDT} - track isolation variable;
+	\item \texttt{p2\_IsoBDT} - track isolation variable;
+	\item \texttt{p0\_track\_Chi2Dof} - quality of p0 muon track;
+	\item \texttt{p1\_track\_Chi2Dof} - quality of p1 muon track;
+	\item \texttt{p2\_track\_Chi2Dof} - quality of p2 muon track;
+	\item \texttt{p0\_pt} - transverse momentum of p0 muon;
+	\item \texttt{p0\_p} - momentum of p0 muon;
+	\item \texttt{p0\_eta} - pseudorapidity of p0 muon;
+	\item \texttt{p0\_IP} - Impact parameter of p0 muon;
+	\item \texttt{p0\_IPSig} - Impact Parameter Significance of p0 muon;
+	\item \texttt{p1\_pt} - transverse momentum of p1 muon;
+	\item \texttt{p1\_p} - momentum of p1 muon;
+	\item \texttt{p1\_eta} - pseudorapidity of p1 muon;
+	\item \texttt{p1\_IP} - Impact parameter of p1 muon;
+	\item \texttt{p1\_IPSig} - Impact Parameter Significance of p1 muon;
+	\item \texttt{p2\_pt} - transverse momentum of p2 muon;
+	\item \texttt{p2\_p} - momentum of p2 muon;
+	\item \texttt{p2\_eta} - pseudorapidity of p2 muon;
+	\item \texttt{p2\_IP} - Impact parameter of p2 muon;
+	\item \texttt{p2\_IPSig} - Impact Parameter Significance of p2 muon;
+	\item \texttt{SPDhits} - number of hits in the SPD detector;
+	\item \texttt{min\_ANNmuon} - muon identification. LHCb collaboration trains
+					Artificial Neural Networks (ANN) from informations from RICH, ECAL,
+					HCAL, Muon system to distinguish muons from other particles. This
+					variable denotes the minimum of the three muons ANN. This feature
+					should not be used for training and is \textit{absent from the test
+					sets};
 	\item \texttt{signal} - is the target variable to predict.
 \end{itemize}
 
