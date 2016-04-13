@@ -61,8 +61,8 @@ simulated while background events come from real data collected by the LHCb
 detectors, observing collision of accelerated particles with a specific mass
 range in which $\tau \rightarrow 3\mu$ can't happen.
 
-The training dataset is given is CSV format. Follows a list of available
-features for training:
+The training dataset is given is CSV format and contains 49 features plus target
+label. Follows a list of available features for training:
 \begin{itemize}
 	\item \texttt{FlightDistance} - distance between $\tau$ and PV (primary vertex, the
 		original protons collision point);
@@ -95,8 +95,60 @@ features for training:
 	\item \texttt{signal} - is the target variable to predict.
 \end{itemize}
 
-\subsection{Testing Data}
+\subsection{Testing}
+For this Kaggle competition the submission procedure is different from the usual
+ones. The dataset comes with, besides a test set, an \textit{agreement} and a
+\textit{correlation} set. Any submission has to pass the agreement and
+correlation checks before being scored on the test set.
 
+\subsubsection{Agreement Test}
+\label{sec:agreement}
+The agreement dataset contains real and simulated events for a much more known,
+observed and understood decay: $Ds \rightarrow \varphi\pi$. The motivation for
+this check is that since the training set contains simulated data (for a
+phenomenon not well understood), it is possible for the classifier to reach high
+performances by picking up features that are not well modeled by the simulation.
+The check then requires the classifier not to expose a large discrepancy when
+applied to real-world and simulated data.
+
+For this score, we are provided with a dataset on the control channel $Ds
+\rightarrow \varphi\pi$ which has the same features as the training set. This
+type of decay is not present in the training data. The
+\textit{Kolmogorov-Smirnov} test is used to evaluate the differences between
+real and simulated data between the classifier distribution on each sample.
+The Kolmogorov-Smirnov metric has to be smaller than 0.09 to pass the agreement
+check.
+
+\subsubsection{Correlation Test}
+\label{sec:correlation}
+This test checks whether the classifier is uncorrelated with the $\tau$ mass.
+Because mass is a measured quantity, scientists don't trust it when building a
+model. Correlation with mass in an artificial signal-like peak or lead to
+incorrect estimations of background signals.
+
+The \texttt{mass} column is not included in the test dataset. However, this hidden
+mass information is used to perform a \textit{Cramer-von Mises} test,
+iteratively comparing two distributions of a) predicted values from submission
+for entire dataset and b) predicted values within a certain mass region in
+rolling window fashion along the whole mass range. Getting similar distributions
+for all mass sub-regions means that the classifier is not correlated with the
+mass. The submission must give a Cramer-von Mises value less than 0.002 to pass
+the correlation test.
+
+\subsubsection{Test Set}
+\label{sec:test-set}
+The test set has the same columns that the training set has except for
+\texttt{mass}, \texttt{production}, \texttt{min\_ANNmuon} and \texttt{signal}.
+The data contained in this dataset consists of:
+\begin{enumerate}
+	\item simulated signal events for $\tau \rightarrow 3\mu$;
+	\item real background events for $\tau \rightarrow 3\mu$;
+	\item simulated events for the $Ds \rightarrow \varphi\pi$;
+	\item real background events for $Ds \rightarrow \varphi\pi$.
+\end{enumerate}
+Events related to the control channel are not used for scoring, but by the
+agreement check (Section \ref{sec:agreement}). One should treat all samples as
+coming from the same collision channel during classification.
 
 \section{Discussion}
 
