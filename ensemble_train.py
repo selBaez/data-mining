@@ -24,6 +24,7 @@ class EnsembleClassifier(object):
 
     @staticmethod
     def load_data(filename, shuffle=False, signal=True):
+        print('Loading data from %s' % filename)
         df = pd.read_csv(filename)
 
         if shuffle:
@@ -140,4 +141,6 @@ if __name__ == '__main__':
         cls.fit(X, y, n_epochs=args.n_epochs)
         cls.save_models()
 
-    cls.makensave_predictions(sh.test_path, sh.test_output_1st)
+    cls.makensave_predictions(sh.test_path, sh.test_output_1st)\
+        .makensave_predictions(sh.check_agreement_path, sh.check_agreement_1st)\
+        .makensave_predictions(sh.check_correlation_path, sh.check_correlation_1st)
