@@ -83,13 +83,12 @@ class EnsembleClassifier(object):
     def make_predictions(self, X):
         X, _ = self._preprocess_data(X, self.scaler)
 
-        predictions = None
+        predictions = np.zeros((len(self.models), X.shape[0]))
         for i, model in enumerate(self.models):
             print('----------- 1st stage: predict model %d/%d ----------' % (i+1, len(self.models)))
-            p = model.predict(X, batch_size=256, verbose=0)[:, 1]
-            predictions = p if predictions is None else predictions + p
+            predictions[i, :] = model.predict(X, batch_size=256, verbose=0)[:, 1]
 
-        return predictions / len(self.models)
+        return predictions.mean(axis=0)
 
     def makensave_predictions(self, input_filename, output_filename, signal=False):
         X, _, _ = self.load_data(input_filename, signal=signal)
@@ -136,11 +135,12 @@ if __name__ == '__main__':
             with open(filename, 'rb') as fid:
                 cls.models.append(cPickle.load(fid))
     else:
-        X, y, features = EnsembleClassifier.load_data(sh.training_path)
+        X, y, features = EnsembleClassifier.load_data(sh.training_path, shuffle=True)
         cls = EnsembleClassifier(n_models=args.n_models)
         cls.fit(X, y, n_epochs=args.n_epochs)
         cls.save_models()
 
-    cls.makensave_predictions(sh.test_path, sh.test_output_1st)\
+    cls.makensave_predictions(sh.training_path, sh.training_output_1st)\
+        .makensave_predictions(sh.test_path, sh.test_output_1st)\
         .makensave_predictions(sh.check_agreement_path, sh.check_agreement_1st)\
         .makensave_predictions(sh.check_correlation_path, sh.check_correlation_1st)

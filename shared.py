@@ -14,9 +14,11 @@ check_correlation_path = join(data_path, 'check_correlation.csv')
 
 # Output paths
 submissions_path = './submissions'
+training_output_1st = join(submissions_path, '1st_training.csv')
 test_output_1st = join(submissions_path, '1st_test.csv')
 check_agreement_1st = join(submissions_path, '1st_agreement.csv')
 check_correlation_1st = join(submissions_path, '1st_correlation.csv')
+transductor_submission = join(submissions_path, '2nd_transductors.csv')
 
 # Models paths
 models_path = './models'
@@ -26,8 +28,11 @@ transductor_scaler_file = join(models_path, '2nd_scaler.pkl')
 transductor_pre_model_file = join(models_path, '2nd_transductor_pre.pkl')
 transductor_model_file = join(models_path, '2nd_transductor_{}.pkl')
 
+# Logs
+transductor_log_file = './transductor_train.log'
+
 
 # Constants
 class Defaults(object):
-    n_models_ensemble = 10
+    n_models_ensemble = 30
     n_epochs_ensemble = 60
