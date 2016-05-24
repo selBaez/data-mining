@@ -1,0 +1,11 @@
+.texpadtmp/
+*.pdf
+*.aux
+*.bbl
+*.blg
+*.dvi
+*.synctex.gz
+*.log
+*-blx.bib
+*.run.xml
+
