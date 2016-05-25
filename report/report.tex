@@ -12,12 +12,13 @@
 \usepackage{mathtools}
 \usepackage[backend=bibtex, style=ieee]{biblatex}
 \usepackage{tabularx, caption}
+\usepackage{hyperref}
 
 \addbibresource{bibliography}
 
 \begin{document}
  
-\title{Data Mining - Signal finding}
+\title{Data Mining - Flavours of Physics}
 
 \author{\IEEEauthorblockN{Selene Baez Santamaria (2572529) \\
 		Andrea Jemmett (2573223) \\
@@ -40,11 +41,15 @@ Amsterdam, Netherlands}}
 
 \section{Introduction}
 
+The goal of this competition is to find undiscovered phenomena given data from the Large Hadron Collider (LHC). It is a classification task for the variable \textit{signal}, which can have values $0$ or $1$, given the values for other $50$ variables. 
+
+The competition provides a Starter Kit, training and test sets, a specific submission format and a couple check files to evaluate the submitted data. The link for these assets is \href{https://www.kaggle.com/c/flavours-of-physics/data}{here} This competition was closed only five months ago, and it is still relevant in the field.
+
 \subsection{Objectives}
 
 \begin{itemize}
-	\item Objective 1.
-	\item Objective 2.
+	\item Compare the results from having domain knowledge and not.
+	\item Objective 2. %TODO
 \end{itemize}
  
 \subsection{Research question}
@@ -53,23 +58,107 @@ Amsterdam, Netherlands}}
 
 \subsection{Hypothesis}
 \label{sec:hypothesis}
-
+Comparable accuracy (at least as high as the winner of the Kaggle competition) can be achieved by a system that lacks domain knowledge.
 
 \subsection{Contribution}
 
 
 \subsection{Organization}
+Section \ref{sec:related_work} explores the solutions submitted to Kaggle at the time of competition. Section \ref{sec:dataset} describes the dataset and the competition regulations (such as the agreement measures to be met). Section \ref{sec:model_design} depicts the model we proposed to tackle the classification task. Section \ref{sec:experiment} refers to the experimental set up we use to test our model, while Section \ref{sec:results} shows the results obtained. Finally, Section \ref{sec:conclusion} summarizes our observations.
 
 
 \section{Related Work}
 \label{sec:related_work}
+%TODO Describe solution from winner
 
+% Maybe include other physics related competitions?
+
+
+\section{The Dataset}
+\label{sec:dataset}
+As said, the dataset was offered on Kaggle for a competition organized by
+institutions such as CERN and LHCb. The data have been collected directly at the
+LHC during experiments with high energy particles collisions. The dataset
+consists of a collection of collision events and their properties. The objective
+of the Kaggle competition was to predict whether a $\tau \rightarrow 3\mu$ decay
+(the one that identifies a lepton flavour) was present in the collision. From
+scientists this phenomenon is supposed \emph{not} to happen, so the goal of the
+competition was to discover $\tau \rightarrow 3\mu$ happening more frequently
+than scientists currently expect.
+
+\subsection{Training Data}
+For training there is a labeled dataset ready to be used to train a classifier.
+The label, marked as \texttt{signal} with range in ${0,1}$ where 1 identifies
+signal events while 0 represents background events). Signal events have been
+simulated while background events come from real data collected by the LHCb
+detectors, observing collision of accelerated particles with a specific mass
+range in which $\tau \rightarrow 3\mu$ can't happen.
+
+The training dataset is given is CSV format and contains 49 features plus target
+label. For a detailed description of the features see Appendix \ref{sec:features}
+
+\subsection{Testing}
+For this Kaggle competition the submission procedure is different from the usual
+ones. The dataset comes with, besides a test set, an \textit{agreement} and a
+\textit{correlation} set. Any submission has to pass the agreement and
+correlation checks before being scored on the test set.
+
+\subsubsection{Agreement Test}
+\label{sec:agreement}
+The agreement dataset contains real and simulated events for a much more known,
+observed and understood decay: $Ds \rightarrow \varphi\pi$. The motivation for
+this check is that since the training set contains simulated data (for a
+phenomenon not well understood), it is possible for the classifier to reach high
+performances by picking up features that are not well modeled by the simulation.
+The check then requires the classifier not to expose a large discrepancy when
+applied to real-world and simulated data.
+
+For this score, we are provided with a dataset on the control channel $Ds
+\rightarrow \varphi\pi$ which has the same features as the training set. This
+type of decay is not present in the training data. The
+\textit{Kolmogorov-Smirnov} test is used to evaluate the differences between
+real and simulated data between the classifier distribution on each sample.
+The Kolmogorov-Smirnov metric has to be smaller than 0.09 to pass the agreement
+check.
+
+\subsubsection{Correlation Test}
+\label{sec:correlation}
+This test checks whether the classifier is uncorrelated with the $\tau$ mass.
+Because mass is a measured quantity, scientists don't trust it when building a
+model. Correlation with mass in an artificial signal-like peak or lead to
+incorrect estimations of background signals.
+
+The \texttt{mass} column is not included in the test dataset. However, this hidden
+mass information is used to perform a \textit{Cramer-von Mises} test,
+iteratively comparing two distributions of a) predicted values from submission
+for entire dataset and b) predicted values within a certain mass region in
+rolling window fashion along the whole mass range. Getting similar distributions
+for all mass sub-regions means that the classifier is not correlated with the
+mass. The submission must give a Cramer-von Mises value less than 0.002 to pass
+the correlation test.
+
+\subsubsection{Test Set}
+\label{sec:test-set}
+The test set has the same columns that the training set has except for
+\texttt{mass}, \texttt{production}, \texttt{min\_ANNmuon} and \texttt{signal}.
+The data contained in this dataset consists of:
+\begin{enumerate}
+	\item simulated signal events for $\tau \rightarrow 3\mu$;
+	\item real background events for $\tau \rightarrow 3\mu$;
+	\item simulated events for the $Ds \rightarrow \varphi\pi$;
+	\item real background events for $Ds \rightarrow \varphi\pi$.
+\end{enumerate}
+Events related to the control channel are not used for scoring, but by the
+agreement check (Section \ref{sec:agreement}). One should treat all samples as
+coming from the same collision channel during classification.
 
 \section{Model design}
 \label{sec:model_design}
+The model consists of 30 neural networks with different topologies.
 
 \subsection{Neural Networks design}
 \label{sec:NN_design}
+%TODO describe topologies and MOTIVATE THEM!
 % Inputs
 
 % Outputs
@@ -93,12 +182,76 @@ Amsterdam, Netherlands}}
 
 
 \section{Results}
-\label{sec:experiments_performances}
+\label{sec:results}
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-\newpage
+\clearpage
+\appendix
 
+\section{Features for training}
+\label{sec:features}
+Follows a list of available features for training:
+\begin{itemize}
+	\item \texttt{FlightDistance} - distance between $\tau$ and PV (primary vertex, the
+	original protons collision point);
+	\item \texttt{FlightDistanceError} - error on FlightDistance;
+	\item \texttt{mass} - reconstructed $\tau$ candidate invariant mass, which
+	is \textit{absent in the test samples};
+	\item \texttt{LifeTime} - life time of tau candidate;
+	\item \texttt{IP} - Impact Parameter of tau candidate;
+	\item \texttt{IPSig} - Significance of Impact Parameter;
+	\item \texttt{VertexChi2} - $\chi^2$ of $\tau$ vertex;
+	\item \texttt{dira} - cosine of the angle between the $\tau$ momentum and line
+	between PV and tau vertex;
+	\item \texttt{pt} - transverse momentum of $\tau$;
+	\item \texttt{DOCAone} - Distance of Closest Approach between p0 and p1;
+	\item \texttt{DOCAtwo} - Distance of Closest Approach between p1 and p2;
+	\item \texttt{DOCAthree} - Distance of Closest Approach between p0 and p2;
+	\item \texttt{IP\_p0p2} - Impact parameter of the p0 and p2 pair;
+	\item \texttt{IP\_p1p2} - Impact parameter of the p1 and p2 pair;
+	\item \texttt{isolationa} - track isolation variable;
+	\item \texttt{isolationb} - track isolation variable;
+	\item \texttt{isolationc} - track isolation variable;
+	\item \texttt{isolationd} - track isolation variable;
+	\item \texttt{isolatione} - track isolation variable;
+	\item \texttt{isolationf} - track isolation variable;
+	\item \texttt{iso} - track isolation variable;
+	\item \texttt{CDF1} - cone isolation variable;
+	\item \texttt{CDF2} - cone isolation variable;
+	\item \texttt{CDF3} - cone isolation variable;
+	\item \texttt{production} - source of $\tau$ (\textit{absent from test data});
+	\item \texttt{ISO\_SumBDT} - track isolation variable;
+	\item \texttt{p0\_IsoBDT} - track isolation variable;
+	\item \texttt{p1\_IsoBDT} - track isolation variable;
+	\item \texttt{p2\_IsoBDT} - track isolation variable;
+	\item \texttt{p0\_track\_Chi2Dof} - quality of p0 muon track;
+	\item \texttt{p1\_track\_Chi2Dof} - quality of p1 muon track;
+	\item \texttt{p2\_track\_Chi2Dof} - quality of p2 muon track;
+	\item \texttt{p0\_pt} - transverse momentum of p0 muon;
+	\item \texttt{p0\_p} - momentum of p0 muon;
+	\item \texttt{p0\_eta} - pseudorapidity of p0 muon;
+	\item \texttt{p0\_IP} - Impact parameter of p0 muon;
+	\item \texttt{p0\_IPSig} - Impact Parameter Significance of p0 muon;
+	\item \texttt{p1\_pt} - transverse momentum of p1 muon;
+	\item \texttt{p1\_p} - momentum of p1 muon;
+	\item \texttt{p1\_eta} - pseudorapidity of p1 muon;
+	\item \texttt{p1\_IP} - Impact parameter of p1 muon;
+	\item \texttt{p1\_IPSig} - Impact Parameter Significance of p1 muon;
+	\item \texttt{p2\_pt} - transverse momentum of p2 muon;
+	\item \texttt{p2\_p} - momentum of p2 muon;
+	\item \texttt{p2\_eta} - pseudorapidity of p2 muon;
+	\item \texttt{p2\_IP} - Impact parameter of p2 muon;
+	\item \texttt{p2\_IPSig} - Impact Parameter Significance of p2 muon;
+	\item \texttt{SPDhits} - number of hits in the SPD detector;
+	\item \texttt{min\_ANNmuon} - muon identification. LHCb collaboration trains
+	Artificial Neural Networks (ANN) from informations from RICH, ECAL,
+	HCAL, Muon system to distinguish muons from other particles. This
+	variable denotes the minimum of the three muons ANN. This feature
+	should not be used for training and is \textit{absent from the test
+		sets};
+	\item \texttt{signal} - is the target variable to predict.
+\end{itemize}
 
 \end{document}
