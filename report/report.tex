@@ -1,6 +1,6 @@
 \documentclass[conference]{IEEEtran}
 
-\ifCLASSINFOpdf
+\ifCLASSINFOpdf%
 
 \else
 
@@ -17,8 +17,8 @@
 \addbibresource{bibliography}
 
 \begin{document}
- 
-\title{Data Mining - Flavours of Physics}
+
+\title{Data Mining --- Flavours of Physics}
 
 \author{\IEEEauthorblockN{Selene Baez Santamaria (2572529) \\
 		Andrea Jemmett (2573223) \\
@@ -36,14 +36,20 @@ Amsterdam, Netherlands}}
 \end{abstract}
 
 
-\IEEEpeerreviewmaketitle
+\IEEEpeerreviewmaketitle%
 
 
 \section{Introduction}
+The goal of this competition is to find undiscovered phenomena given data from
+the Large Hadron Collider (LHC). It is a classification task for the variable
+\textit{signal}, which can have values $0$ or $1$, given the values for other
+$50$ variables.
 
-The goal of this competition is to find undiscovered phenomena given data from the Large Hadron Collider (LHC). It is a classification task for the variable \textit{signal}, which can have values $0$ or $1$, given the values for other $50$ variables. 
-
-The competition provides a Starter Kit, training and test sets, a specific submission format and a couple check files to evaluate the submitted data. The link for these assets is \href{https://www.kaggle.com/c/flavours-of-physics/data}{here} This competition was closed only five months ago, and it is still relevant in the field.
+The competition provides a Starter Kit, training and test sets, a specific
+submission format and a couple check files to evaluate the submitted data. The
+link for these assets is
+\href{https://www.kaggle.com/c/flavours-of-physics/data}{here} This competition
+was closed only five months ago, and it is still relevant in the field.
 
 \subsection{Objectives}
 
@@ -51,20 +57,27 @@ The competition provides a Starter Kit, training and test sets, a specific submi
 	\item Compare the results from having domain knowledge and not.
 	\item Objective 2. %TODO
 \end{itemize}
- 
+
 \subsection{Research question}
 \label{sec:researchQuestions}
 
 
 \subsection{Hypothesis}
 \label{sec:hypothesis}
-Comparable accuracy (at least as high as the winner of the Kaggle competition) can be achieved by a system that lacks domain knowledge.
+Comparable accuracy (at least as high as the winner of the Kaggle competition)
+can be achieved by a system that lacks domain knowledge.
 
 \subsection{Contribution}
 
 
 \subsection{Organization}
-Section \ref{sec:related_work} explores the solutions submitted to Kaggle at the time of competition. Section \ref{sec:dataset} describes the dataset and the competition regulations (such as the agreement measures to be met). Section \ref{sec:system_design} depicts the model we proposed to tackle the classification task. Section \ref{sec:experiment} refers to the experimental set up we use to test our model, while Section \ref{sec:results} shows the results obtained. Finally, Section \ref{sec:conclusion} summarizes our observations.
+Section~\ref{sec:related_work} explores the solutions submitted to Kaggle at the
+time of competition. Section~\ref{sec:dataset} describes the dataset and the
+competition regulations (such as the agreement measures to be met).
+Section~\ref{sec:system_design} depicts the model we proposed to tackle the
+classification task. Section~\ref{sec:experiment} refers to the experimental set
+up we use to test our model, while Section~\ref{sec:results} shows the results
+obtained. Finally, Section~\ref{sec:conclusion} summarizes our observations.
 
 
 \section{Related Work}
@@ -89,13 +102,14 @@ than scientists currently expect.
 \subsection{Training Data}
 For training there is a labeled dataset ready to be used to train a classifier.
 The label, marked as \texttt{signal} with range in ${0,1}$ where 1 identifies
-signal events while 0 represents background events). Signal events have been
+signal events while 0 represents background events. Signal events have been
 simulated while background events come from real data collected by the LHCb
 detectors, observing collision of accelerated particles with a specific mass
 range in which $\tau \rightarrow 3\mu$ can't happen.
 
 The training dataset is given is CSV format and contains 49 features plus target
-label. For a detailed description of the features see Appendix \ref{sec:features}
+label. For a detailed description of the features see
+Appendix~\ref{sec:features}
 
 \subsection{Testing}
 For this Kaggle competition the submission procedure is different from the usual
@@ -130,8 +144,8 @@ incorrect estimations of background signals.
 
 The \texttt{mass} column is not included in the test dataset. However, this hidden
 mass information is used to perform a \textit{Cramer-von Mises} test,
-iteratively comparing two distributions of a) predicted values from submission
-for entire dataset and b) predicted values within a certain mass region in
+iteratively comparing two distributions of a.\ predicted values from submission
+for entire dataset and b.\ predicted values within a certain mass region in
 rolling window fashion along the whole mass range. Getting similar distributions
 for all mass sub-regions means that the classifier is not correlated with the
 mass. The submission must give a Cramer-von Mises value less than 0.002 to pass
@@ -149,7 +163,7 @@ The data contained in this dataset consists of:
 	\item real background events for $Ds \rightarrow \varphi\pi$.
 \end{enumerate}
 Events related to the control channel are not used for scoring, but by the
-agreement check (Section \ref{sec:agreement}). One should treat all samples as
+agreement check (Section~\ref{sec:agreement}). One should treat all samples as
 coming from the same collision channel during classification.
 
 \section{System design}
@@ -163,21 +177,20 @@ The model consists of a set of neural networks, with different topologies, assem
 Each neural network consists of 5 fully connected layers. The first 4 layers have a \textit{PReLU} activation function and the last one has a \textit{softmax} function. Furthermore, layers 2, 3, and 4 perform Dropout in order to avoid overfitting of the network. The input and output connections, as well as summary of the above characteristics, is shown in the following table:
 
 \begin{center}
-	\begin{tabular}{| l | c | c | c | c |}
-		\hline
-		\textbf{Layer} & \textbf{n of inputs} & \textbf{n of outputs} & \textbf{Dropout rate} & \textbf{Activation function} \\ \hline
-		\textit{Layer 1} & N of features & 75 & 0\% & PReLU \\ \hline
-		\textit{Layer 2} & 75 & 50 & 11\% & PReLU \\ \hline
-		\textit{Layer 3} & 50 & 30 & 9\% & PReLU \\ \hline
-		\textit{Layer 4} & 30 & 25 & 7\% & PReLU \\ \hline
-		\textit{Layer 5} & 25 & 2 & 0\% & softmax \\ \hline
+	\begin{tabular}{ l c c c c }
+		\textbf{Layer} & \textbf{n of inputs} & \textbf{n of outputs} & \textbf{Dropout rate} & \textbf{Activation function} \\
+		\textit{Layer 1} & N of features & 75 & 0\% & PReLU \\
+		\textit{Layer 2} & 75 & 50 & 11\% & PReLU \\
+		\textit{Layer 3} & 50 & 30 & 9\% & PReLU \\
+		\textit{Layer 4} & 30 & 25 & 7\% & PReLU \\
+		\textit{Layer 5} & 25 & 2 & 0\% & softmax \\
 	\end{tabular}
 \end{center}
 
-We use a \textit{Cross entropy} loss function. 
+We use a \textit{Cross entropy} loss function.
 
 \subsection{Model Ensemble}
-The models output is them combined together to produce one final prediction. So far, the aggregation of the models is done by taking the mean of the individuals. 
+The models output is them combined together to produce one final prediction. So far, the aggregation of the models is done by taking the mean of the individuals.
 
 
 \section{Experimental set up}
@@ -207,64 +220,64 @@ The models output is them combined together to produce one final prediction. So 
 \label{sec:features}
 Follows a list of available features for training:
 \begin{itemize}
-	\item \texttt{FlightDistance} - distance between $\tau$ and PV (primary vertex, the
+	\item \texttt{FlightDistance}~-- distance between $\tau$ and PV (primary vertex, the
 	original protons collision point);
-	\item \texttt{FlightDistanceError} - error on FlightDistance;
-	\item \texttt{mass} - reconstructed $\tau$ candidate invariant mass, which
+	\item \texttt{FlightDistanceError}~-- error on FlightDistance;
+	\item \texttt{mass}~-- reconstructed $\tau$ candidate invariant mass, which
 	is \textit{absent in the test samples};
-	\item \texttt{LifeTime} - life time of tau candidate;
-	\item \texttt{IP} - Impact Parameter of tau candidate;
-	\item \texttt{IPSig} - Significance of Impact Parameter;
-	\item \texttt{VertexChi2} - $\chi^2$ of $\tau$ vertex;
-	\item \texttt{dira} - cosine of the angle between the $\tau$ momentum and line
+	\item \texttt{LifeTime}~-- life time of tau candidate;
+	\item \texttt{IP}~-- Impact Parameter of tau candidate;
+	\item \texttt{IPSig}~-- Significance of Impact Parameter;
+	\item \texttt{VertexChi2}~-- $\chi^2$ of $\tau$ vertex;
+	\item \texttt{dira}~-- cosine of the angle between the $\tau$ momentum and line
 	between PV and tau vertex;
-	\item \texttt{pt} - transverse momentum of $\tau$;
-	\item \texttt{DOCAone} - Distance of Closest Approach between p0 and p1;
-	\item \texttt{DOCAtwo} - Distance of Closest Approach between p1 and p2;
-	\item \texttt{DOCAthree} - Distance of Closest Approach between p0 and p2;
-	\item \texttt{IP\_p0p2} - Impact parameter of the p0 and p2 pair;
-	\item \texttt{IP\_p1p2} - Impact parameter of the p1 and p2 pair;
-	\item \texttt{isolationa} - track isolation variable;
-	\item \texttt{isolationb} - track isolation variable;
-	\item \texttt{isolationc} - track isolation variable;
-	\item \texttt{isolationd} - track isolation variable;
-	\item \texttt{isolatione} - track isolation variable;
-	\item \texttt{isolationf} - track isolation variable;
-	\item \texttt{iso} - track isolation variable;
-	\item \texttt{CDF1} - cone isolation variable;
-	\item \texttt{CDF2} - cone isolation variable;
-	\item \texttt{CDF3} - cone isolation variable;
-	\item \texttt{production} - source of $\tau$ (\textit{absent from test data});
-	\item \texttt{ISO\_SumBDT} - track isolation variable;
-	\item \texttt{p0\_IsoBDT} - track isolation variable;
-	\item \texttt{p1\_IsoBDT} - track isolation variable;
-	\item \texttt{p2\_IsoBDT} - track isolation variable;
-	\item \texttt{p0\_track\_Chi2Dof} - quality of p0 muon track;
-	\item \texttt{p1\_track\_Chi2Dof} - quality of p1 muon track;
-	\item \texttt{p2\_track\_Chi2Dof} - quality of p2 muon track;
-	\item \texttt{p0\_pt} - transverse momentum of p0 muon;
-	\item \texttt{p0\_p} - momentum of p0 muon;
-	\item \texttt{p0\_eta} - pseudorapidity of p0 muon;
-	\item \texttt{p0\_IP} - Impact parameter of p0 muon;
-	\item \texttt{p0\_IPSig} - Impact Parameter Significance of p0 muon;
-	\item \texttt{p1\_pt} - transverse momentum of p1 muon;
-	\item \texttt{p1\_p} - momentum of p1 muon;
-	\item \texttt{p1\_eta} - pseudorapidity of p1 muon;
-	\item \texttt{p1\_IP} - Impact parameter of p1 muon;
-	\item \texttt{p1\_IPSig} - Impact Parameter Significance of p1 muon;
-	\item \texttt{p2\_pt} - transverse momentum of p2 muon;
-	\item \texttt{p2\_p} - momentum of p2 muon;
-	\item \texttt{p2\_eta} - pseudorapidity of p2 muon;
-	\item \texttt{p2\_IP} - Impact parameter of p2 muon;
-	\item \texttt{p2\_IPSig} - Impact Parameter Significance of p2 muon;
-	\item \texttt{SPDhits} - number of hits in the SPD detector;
-	\item \texttt{min\_ANNmuon} - muon identification. LHCb collaboration trains
-	Artificial Neural Networks (ANN) from informations from RICH, ECAL,
-	HCAL, Muon system to distinguish muons from other particles. This
-	variable denotes the minimum of the three muons ANN. This feature
-	should not be used for training and is \textit{absent from the test
+	\item \texttt{pt}~-- transverse momentum of $\tau$;
+	\item \texttt{DOCAone}~-- Distance of Closest Approach between p0 and p1;
+	\item \texttt{DOCAtwo}~-- Distance of Closest Approach between p1 and p2;
+	\item \texttt{DOCAthree}~-- Distance of Closest Approach between p0 and p2;
+	\item \texttt{IP\_p0p2}~-- Impact parameter of the p0 and p2 pair;
+	\item \texttt{IP\_p1p2}~-- Impact parameter of the p1 and p2 pair;
+	\item \texttt{isolationa}~-- track isolation variable;
+	\item \texttt{isolationb}~-- track isolation variable;
+	\item \texttt{isolationc}~-- track isolation variable;
+	\item \texttt{isolationd}~-- track isolation variable;
+	\item \texttt{isolatione}~-- track isolation variable;
+	\item \texttt{isolationf}~-- track isolation variable;
+	\item \texttt{iso}~-- track isolation variable;
+	\item \texttt{CDF1}~-- cone isolation variable;
+	\item \texttt{CDF2}~-- cone isolation variable;
+	\item \texttt{CDF3}~-- cone isolation variable;
+	\item \texttt{production}~-- source of $\tau$ (\textit{absent from test data});
+	\item \texttt{ISO\_SumBDT}~-- track isolation variable;
+	\item \texttt{p0\_IsoBDT}~-- track isolation variable;
+	\item \texttt{p1\_IsoBDT}~-- track isolation variable;
+	\item \texttt{p2\_IsoBDT}~-- track isolation variable;
+	\item \texttt{p0\_track\_Chi2Dof}~-- quality of p0 muon track;
+	\item \texttt{p1\_track\_Chi2Dof}~-- quality of p1 muon track;
+	\item \texttt{p2\_track\_Chi2Dof}~-- quality of p2 muon track;
+	\item \texttt{p0\_pt}~-- transverse momentum of p0 muon;
+	\item \texttt{p0\_p}~-- momentum of p0 muon;
+	\item \texttt{p0\_eta}~-- pseudorapidity of p0 muon;
+	\item \texttt{p0\_IP}~-- Impact parameter of p0 muon;
+	\item \texttt{p0\_IPSig}~-- Impact Parameter Significance of p0 muon;
+	\item \texttt{p1\_pt}~-- transverse momentum of p1 muon;
+	\item \texttt{p1\_p}~-- momentum of p1 muon;
+	\item \texttt{p1\_eta}~-- pseudorapidity of p1 muon;
+	\item \texttt{p1\_IP}~-- Impact parameter of p1 muon;
+	\item \texttt{p1\_IPSig}~-- Impact Parameter Significance of p1 muon;
+	\item \texttt{p2\_pt}~-- transverse momentum of p2 muon;
+	\item \texttt{p2\_p}~-- momentum of p2 muon;
+	\item \texttt{p2\_eta}~-- pseudorapidity of p2 muon;
+	\item \texttt{p2\_IP}~-- Impact parameter of p2 muon;
+	\item \texttt{p2\_IPSig}~-- Impact Parameter Significance of p2 muon;
+	\item \texttt{SPDhits}~-- number of hits in the SPD detector;
+	\item \texttt{min\_ANNmuon}~-- muon identification. LHCb collaboration trains
+  	Artificial Neural Networks (ANN) from informations from RICH, ECAL,
+  	HCAL, Muon system to distinguish muons from other particles. This
+  	variable denotes the minimum of the three muons ANN. This feature
+  	should not be used for training and is \textit{absent from the test
 		sets};
-	\item \texttt{signal} - is the target variable to predict.
+	\item \texttt{signal}~-- is the target variable to predict.
 \end{itemize}
 
 \end{document}
