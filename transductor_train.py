@@ -29,18 +29,40 @@ def load_data(data_filename, predictions_filename, weight=False, mass=False):
     w = data['weight'].values if weight else None
     m = data['mass'].values if mass else None
 
-    return X, y, w, m
+    return features, X, y, w, m
 
 
-def preprocess_data(X, scaler=None):
+def load_data_stacked(data_filename, predictions_filename_pkl, weight=False, mass=False):
+    data = pd.read_csv(data_filename)
+    with open(predictions_filename_pkl, 'rb') as f:
+        predictions = cPickle.load(f)
+
+    for i in xrange(predictions.shape[0]):
+        data['prediction_' + str(i)] = predictions[i, :]
+
+    data = data.iloc[np.random.permutation(len(data))].reset_index(drop=True)
+
+    filter_out = ['id', 'min_ANNmuon', 'production', 'mass', 'weight', 'signal']
+    features = list(f for f in data.columns if f not in filter_out)
+    X = data[features].values
+    y = data['signal'].values if not mass else None
+    w = data['weight'].values if weight else None
+    m = data['mass'].values if mass else None
+
+    return features, X, y, w, m
+
+
+def preprocess_data(X, n_predictions, scaler=None):
     if scaler is None:
         scaler = StandardScaler()
-        scaler.fit(X[:, :-1])    # don't scale last col - prediction
-    X[:, :-1] = scaler.transform(X[:, :-1])
+        scaler.fit(X[:, :-n_predictions])    # don't scale prediction cols
+    X[:, :-n_predictions] = scaler.transform(X[:, :-n_predictions])
     return X, scaler
 
 
 def create_model(n_inputs):
+    print 'Creating model with %d inputs\n' % n_inputs
+
     model = Sequential()
     model.add(Dense(50, input_dim=n_inputs))
     model.add(Activation('tanh'))
@@ -83,7 +105,7 @@ def dump_transductor_model(model, transductor_model_file):
 
 
 def create_objective(model, transductor_model_file, logger, X, y, Xa, ya, wa, Xc, mc,
-                     ks_threshold=0.09, cvm_threshold=0.002, verbose=True):
+                     ks_threshold=0.08, cvm_threshold=0.002, verbose=True):
     i = []
     d = []
     auc_log = [0]
@@ -133,13 +155,15 @@ if __name__ == '__main__':
                         default=False, const=True)
     args = parser.parse_args()
 
-    Xt, yt, _, _ = load_data(sh.training_path, sh.training_output_1st)    # shuffled
-    Xa, ya, wa, _ = load_data(sh.check_agreement_path, sh.check_agreement_1st, weight=True)
-    Xc, yc, _, mc = load_data(sh.check_correlation_path, sh.check_correlation_1st, mass=True)
+    features, Xt, yt, _, _ = load_data_stacked(sh.training_path, sh.training_predictions_1st)    # shuffled
+    _, Xa, ya, wa, _ = load_data_stacked(sh.check_agreement_path, sh.agreement_predictions_1st, weight=True)
+    _, Xc, yc, _, mc = load_data_stacked(sh.check_correlation_path, sh.correlation_predictions_1st, mass=True)
 
-    Xt, scaler = preprocess_data(Xt)
-    Xa, _ = preprocess_data(Xa, scaler)
-    Xc, _ = preprocess_data(Xc, scaler)
+    n_predictions = len([f for f in features if f.startswith('prediction_')])
+
+    Xt, scaler = preprocess_data(Xt, n_predictions)
+    Xa, _ = preprocess_data(Xa, n_predictions, scaler)
+    Xc, _ = preprocess_data(Xc, n_predictions, scaler)
     with open(sh.transductor_scaler_file, 'wb') as fid:
         cPickle.dump(scaler, fid)
 

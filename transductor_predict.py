@@ -21,13 +21,29 @@ def load_data(data_filename, predictions_filename, scaler):
 
     return data[features].values
 
+def load_data_stacked(data_filename, predictions_filename_pkl, scaler):
+    data = pd.read_csv(data_filename)
+    with open(predictions_filename_pkl, 'rb') as f:
+        predictions = cPickle.load(f)
+
+    for i in xrange(predictions.shape[0]):
+        data['prediction_' + str(i)] = predictions[i, :]
+
+    filter_out = ['id', 'min_ANNmuon', 'production', 'mass', 'weight', 'signal']
+    features = list(f for f in data.columns if f not in filter_out)
+
+    feats_no_pred = [f for f in features if not f.startswith('prediction_')]
+    data[feats_no_pred] = scaler.transform(data[feats_no_pred])  # do not scale prediction column
+
+    return data[features].values
+
 
 if __name__ == '__main__':
 
     with open(sh.transductor_scaler_file, 'rb') as fid:
         scaler = cPickle.load(fid)
 
-    Xt = load_data(sh.test_path, sh.test_output_1st, scaler)
+    Xt = load_data_stacked(sh.test_path, sh.test_predictions_1st, scaler)
 
     print 'Start making predictions using transductors'
     transductors = []
