@@ -64,7 +64,7 @@ Comparable accuracy (at least as high as the winner of the Kaggle competition) c
 
 
 \subsection{Organization}
-Section \ref{sec:related_work} explores the solutions submitted to Kaggle at the time of competition. Section \ref{sec:dataset} describes the dataset and the competition regulations (such as the agreement measures to be met). Section \ref{sec:model_design} depicts the model we proposed to tackle the classification task. Section \ref{sec:experiment} refers to the experimental set up we use to test our model, while Section \ref{sec:results} shows the results obtained. Finally, Section \ref{sec:conclusion} summarizes our observations.
+Section \ref{sec:related_work} explores the solutions submitted to Kaggle at the time of competition. Section \ref{sec:dataset} describes the dataset and the competition regulations (such as the agreement measures to be met). Section \ref{sec:system_design} depicts the model we proposed to tackle the classification task. Section \ref{sec:experiment} refers to the experimental set up we use to test our model, while Section \ref{sec:results} shows the results obtained. Finally, Section \ref{sec:conclusion} summarizes our observations.
 
 
 \section{Related Work}
@@ -152,19 +152,32 @@ Events related to the control channel are not used for scoring, but by the
 agreement check (Section \ref{sec:agreement}). One should treat all samples as
 coming from the same collision channel during classification.
 
-\section{Model design}
-\label{sec:model_design}
-The model consists of 30 neural networks with different topologies.
+\section{System design}
+\label{sec:system_design}
+The model consists of a set of neural networks, with different topologies, assembled together. The default values are $n\_models = 30$ trained for $n\_epochs = 60$ each.
+
 
 \subsection{Neural Networks design}
 \label{sec:NN_design}
 %TODO describe topologies and MOTIVATE THEM!
-% Inputs
+Each neural network consists of 5 fully connected layers. The first 4 layers have a \textit{PReLU} activation function and the last one has a \textit{softmax} function. Furthermore, layers 2, 3, and 4 perform Dropout in order to avoid overfitting of the network. The input and output connections, as well as summary of the above characteristics, is shown in the following table:
 
-% Outputs
+\begin{center}
+	\begin{tabular}{| l | c | c | c | c |}
+		\hline
+		\textbf{Layer} & \textbf{n of inputs} & \textbf{n of outputs} & \textbf{Dropout rate} & \textbf{Activation function} \\ \hline
+		\textit{Layer 1} & N of features & 75 & 0\% & PReLU \\ \hline
+		\textit{Layer 2} & 75 & 50 & 11\% & PReLU \\ \hline
+		\textit{Layer 3} & 50 & 30 & 9\% & PReLU \\ \hline
+		\textit{Layer 4} & 30 & 25 & 7\% & PReLU \\ \hline
+		\textit{Layer 5} & 25 & 2 & 0\% & softmax \\ \hline
+	\end{tabular}
+\end{center}
+
+We use a \textit{Cross entropy} loss function. 
 
 \subsection{Model Ensemble}
-
+The models output is them combined together to produce one final prediction. So far, the aggregation of the models is done by taking the mean of the individuals. 
 
 
 \section{Experimental set up}
