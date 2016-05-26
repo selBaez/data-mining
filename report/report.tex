@@ -13,6 +13,14 @@
 \usepackage[backend=bibtex, style=ieee]{biblatex}
 \usepackage{tabularx, caption}
 \usepackage{hyperref}
+\usepackage{tikz}
+
+\def\layersep{2.5cm}
+\tikzstyle{neuron}=[circle,fill=black!25,minimum size=17pt,inner sep=0pt]
+\tikzstyle{input neuron}=[neuron, fill=green!50]
+\tikzstyle{output neuron}=[neuron, fill=red!50]
+\tikzstyle{hidden neuron}=[neuron, fill=blue!50]
+\tikzstyle{annot}=[text width=4em, text centered]
 
 \addbibresource{bibliography}
 
@@ -166,32 +174,120 @@ Events related to the control channel are not used for scoring, but by the
 agreement check (Section~\ref{sec:agreement}). One should treat all samples as
 coming from the same collision channel during classification.
 
-\section{System design}
+\section{System Design}
 \label{sec:system_design}
-The model consists of a set of neural networks, with different topologies, assembled together. The default values are $n\_models = 30$ trained for $n\_epochs = 60$ each.
+The biggest challenge of this classification task is due to the evaluation
+requirements. Since the training dataset contains both simulated and real-world
+signals, the classifier is required to pass an agreement test. The purpose of
+this test is to be sure that the distribution of predictions for real-world data
+is similar to the one for simulated signals (recall that the test set comprehend
+both $\tau \rightarrow 3\mu$ and $Ds \rightarrow \varphi\pi$ and competitors are
+required to treat them equally during classification). The agreement test is
+implemented by means of the Kolmogorov-Smirnov test, for which the required
+metric has to be lower than 0.09. In a very similar way the classifier is
+tested for correlation with the \texttt{mass} feature. This is because in physics the
+mass of a particle is not believed to be a trustworthy feature when it comes to
+building models. So a classifier has to pass a correlation test implemented
+through a Cramer-von Mises test which has to return a score lower or equal to
+0.002.
+
+We build our model based on the Ensemble learning set of classifiers and apply
+different variations and heuristics to the basic concepts, such as bagging and
+stacking. The model consists of a composition of ensemble classifiers
+implemented via Neural Networks, with different topologies,
+assembled together. The system could be break down into two main stages: a first
+one where an ensemble of Neural Networks is trained and used to produce
+predictions for all four datasets (train, test, agreement and correlation); a
+second one where those predictions are stacked with the original data to form an
+augmented dataset with as many new features as networks in the first stage's
+ensemble (that is each data-point is enriched with predictions from the
+ensemble).
 
 
 \subsection{Neural Networks design}
 \label{sec:NN_design}
 %TODO describe topologies and MOTIVATE THEM!
-Each neural network consists of 5 fully connected layers. The first 4 layers have a \textit{PReLU} activation function and the last one has a \textit{softmax} function. Furthermore, layers 2, 3, and 4 perform Dropout in order to avoid overfitting of the network. The input and output connections, as well as summary of the above characteristics, is shown in the following table:
+Each neural network consists of 5 fully connected layers. The first 4 layers
+have a \textit{PReLU} activation function and the last one has a
+\textit{softmax} function. Furthermore, layers 2, 3, and 4 perform Dropout in
+order to avoid overfitting of the network. The input and output connections, as
+well as summary of the above characteristics, is shown in the following table:
 
-\begin{center}
-	\begin{tabular}{ l c c c c }
-		\textbf{Layer} & \textbf{n of inputs} & \textbf{n of outputs} & \textbf{Dropout rate} & \textbf{Activation function} \\
-		\textit{Layer 1} & N of features & 75 & 0\% & PReLU \\
+\begin{table}
+	\centering
+	\begin{tabular}[H]{ l c c c c }
+		\textbf{Layer} & \textbf{\# inputs} & \textbf{\# outputs} &
+			\textbf{Dropout rate} & \textbf{Activation function} \\ \hline
+		\textit{Layer 1} & \# features & 75 & 0\% & PReLU \\
 		\textit{Layer 2} & 75 & 50 & 11\% & PReLU \\
 		\textit{Layer 3} & 50 & 30 & 9\% & PReLU \\
 		\textit{Layer 4} & 30 & 25 & 7\% & PReLU \\
 		\textit{Layer 5} & 25 & 2 & 0\% & softmax \\
 	\end{tabular}
-\end{center}
+	\caption{Specification of the feed-forward Neural Network used in the first
+		stage of training the classifier.}
+	\label{tab:model1}
+\end{table}
 
 We use a \textit{Cross entropy} loss function.
 
 \subsection{Model Ensemble}
-The models output is them combined together to produce one final prediction. So far, the aggregation of the models is done by taking the mean of the individuals.
+The first stage of training the full classifier consists in training an ensemble
+of feed-forward Neural Networks using the specifics from Table~\ref{tab:model1}.
+Training is done only on the training set using the \textit{bootstrapping}
+techniques, which consists in using a different sampled (with replacement)
+version of the dataset to train each network in the ensemble. Bootstrapping is a
+sampling technique used to obtain an approximation of independent and
+identically distributed predictions and is the first step required to implement
+\textit{bagging}, a technique to reduce the variance of the predictions.
 
+After training is complete we generate predictions for all four datasets and
+store them for the next stage. Predictions on the test set are also aggregated
+using the mean to produce a \textit{majority vote} classification; this is a
+simple implementation of bagging and unfortunately it is not sufficient to pass
+the agreement and correlation tests.
+
+\begin{table} % TODO change me!
+	\centering
+	\begin{tabular}{ l c c c c }
+		\textbf{Layer} & \textbf{\# inputs} & \textbf{\# outputs} &
+			\textbf{Dropout rate} & \textbf{Activation function} \\ \hline
+		\textit{Layer 1} & \# features & 75 & 0\% & PReLU \\
+		\textit{Layer 2} & 75 & 50 & 11\% & PReLU \\
+		\textit{Layer 3} & 50 & 30 & 9\% & PReLU \\
+		\textit{Layer 4} & 30 & 25 & 7\% & PReLU \\
+		\textit{Layer 5} & 25 & 2 & 0\% & softmax \\
+	\end{tabular}
+	\caption{Specification of the feed-forward network used for transfer
+		learning.}
+	\label{tab:model2}
+\end{table}
+
+\subsection{Transfer Learning}
+In the second stage of training we create a single Neural Network with the
+specifications given in Table~\ref{tab:model2} and its weights are initialized
+with an epoch of cross-entropy optimization on the training data. Then an
+optimization algorithm (using scipy and Powell's method) is executed that tries
+to minimize a loss function that incorporates AUC on the training set,
+Kolmogorov-Smirnov on agreement set and Cramer-von Mises on the correlation set
+in the following way:
+
+\begin{align}
+	\mathcal{L} &= -\text{AUC} + \text{KS} + \text{CvM}
+	\label{eqn:loss}
+\end{align}
+
+The network is fed with the augmented data from the previous stage (original
+data plus predictions from the previous stage).  After each optimization
+iteration we check whether the KS and CvM metrics are less or equal to 0.09 and
+0.002 respectively and that the AUC is greater than the previous stored one. If
+all those three conditions are met, the network is stored for later use (e.g.
+prediction).
+
+Finally the generated ensemble of classifiers needs to be aggregated to form a
+single prediction per data point. This is done again with the bagging technique,
+by taking a majority vote (simple average in this case, because prediction
+probabilities are required).
 
 \section{Experimental set up}
 \label{sec:experiment}
