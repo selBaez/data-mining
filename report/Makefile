@@ -1,8 +1,13 @@
-all: report.pdf
+filename=report
 
-report.pdf: report.tex
-	pdflatex report.tex
+pdf:
+	pdflatex ${filename}.tex
+	bibtex ${filename}
+	pdflatex ${filename}.tex
+	pdflatex ${filename}.tex
+
+read:
+	mupdf ${filename}.pdf &
 
 clean:
-	rm -f *.pdf *.aux *.bbl *.blg *.dvi *.synctex.gz *.log *-blx.bib *.run.xml *.out
-
+	rm -f ${filename}{.ps,.pdf,.log,.aux,.out,.dvi,.bbl,.blg,-blx.bib,.run.xml}
