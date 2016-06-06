@@ -65,4 +65,12 @@ if __name__ == '__main__':
     transductor_submission = pd.DataFrame({'id': df['id'], 'prediction': mean_predictions})
     transductor_submission.to_csv(sh.transductor_submission, index=False)
 
+    corr = np.corrcoef(predictions)
+    cr = corr.sum(axis=0)
+    idx = np.argsort(cr)   # sorted correlations
+    ids = idx[:10]  # take first least corrlated
+    uncorrelated = predictions[ids].mean(axis=0)
+    uncorr_transductor_submission = pd.DataFrame({'id': df['id'], 'prediction': uncorrelated})
+    uncorr_transductor_submission.to_csv(sh.uncorr_transductor_submission, index=False)
+
     print 'done'
