@@ -1,3 +1,6 @@
 keras
 pandas
 sklearn
+graphviz
+matplotlib
+

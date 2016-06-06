@@ -3,12 +3,14 @@
 import numpy as np
 import pandas as pd
 import shared as sh
+from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import resample
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation
 from keras.layers.advanced_activations import PReLU
 from keras.utils import np_utils
+from keras.utils import visualize_util
 import cPickle
 import argparse
 import glob
@@ -68,20 +70,29 @@ class EnsembleClassifier(object):
         X = scaler.transform(X)
         return X, scaler
 
-    def fit(self, X, y, n_epochs=100, scaler=None):
+    def fit(self, X, y, n_epochs=100, scaler=None, validation=None):
         self.models = []
 
         X, self.scaler = self._preprocess_data(X, scaler)
         y = np_utils.to_categorical(y)
 
+        if validation:
+            X_valid, _ = self._preprocess_data(validation[0], scaler)
+            y_valid = np_utils.to_categorical(validation[1])
+            validation = (X_valid, y_valid)
+
         n_inputs = X.shape[1]
+        stats = []
         for i in range(self.n_models):
             print('\n----------- 1st stage: train model %d/%d ----------\n' % (i+1, self.n_models))
             model = self.model_factory(n_inputs)
             # Resample to implement bootstrapping
             X_res, y_res = resample(X, y)
-            model.fit(X_res, y_res, batch_size=64, nb_epoch=n_epochs, validation_data=None, verbose=2)
+            history = model.fit(X_res, y_res, batch_size=64, nb_epoch=n_epochs, validation_data=validation, verbose=2)
+            stats.append(history.history)
             self.models.append(model)
+        with open(sh.ensemble_stats, 'wb') as f:
+            cPickle.dump(stats, f)
 
     def make_predictions(self, X):
         X, _ = self._preprocess_data(X, self.scaler)
@@ -118,6 +129,10 @@ class EnsembleClassifier(object):
             with open(model_file, 'wb') as fid:
                 cPickle.dump(model, fid)
 
+    def save_model_im(self, n_inputs, to_file=sh.ensemble_model_im):
+        model = self._model_factory(n_inputs)
+        visualize_util.plot(model, to_file=to_file, show_shapes=True)
+
 
 if __name__ == '__main__':
 
@@ -141,9 +156,11 @@ if __name__ == '__main__':
             with open(filename, 'rb') as fid:
                 cls.models.append(cPickle.load(fid))
     else:
-        X, y, features = EnsembleClassifier.load_data(sh.training_path, shuffle=True)
+        X, y, features = EnsembleClassifier.load_data(sh.training_path)
+        X, X_valid, y, y_valid = train_test_split(X, y, test_size=.1)
         cls = EnsembleClassifier(n_models=args.n_models)
-        cls.fit(X, y, n_epochs=args.n_epochs)
+        cls.save_model_im(X.shape[1])
+        cls.fit(X, y, n_epochs=args.n_epochs, validation=(X_valid, y_valid))
         cls.save_models()
 
     cls.makensave_predictions(sh.training_path, sh.training_output_1st, sh.training_predictions_1st)\

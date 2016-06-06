@@ -23,6 +23,7 @@ agreement_predictions_1st = join(submissions_path, '1st_agreement_preds.pkl')
 check_correlation_1st = join(submissions_path, '1st_correlation.csv')
 correlation_predictions_1st = join(submissions_path, '1st_correlation_preds.pkl')
 transductor_submission = join(submissions_path, '2nd_transductors.csv')
+uncorr_transductor_submission = join(submissions_path, '2nd_uncorrelated.csv')
 
 # Models paths
 models_path = './models'
@@ -32,11 +33,20 @@ transductor_scaler_file = join(models_path, '2nd_scaler.pkl')
 transductor_pre_model_file = join(models_path, '2nd_transductor_pre.pkl')
 transductor_model_file = join(models_path, '2nd_transductor_{}.pkl')
 
-# Logs
-transductor_log_file = './transductor_train.log'
+# Logs / stats
+stats_path = './stats'
+transductor_log_file = join(stats_path, 'transductor_train.log')
+ensemble_stats = join(stats_path, 'ensemble_stats.pkl')
+transductor_stats = join(stats_path, 'transductor_stats.pkl')
+
+# Misc
+imgs_path = './imgs'
+ensemble_model_im = join(imgs_path, 'ensemble_net.png')
+ensemble_stats_im = join(imgs_path, 'ensemble_stats.png')
+transductor_stats_im = join(imgs_path, 'transductor_stats.png')
 
 
 # Constants
 class Defaults(object):
     n_models_ensemble = 20
-    n_epochs_ensemble = 60
+    n_epochs_ensemble = 75

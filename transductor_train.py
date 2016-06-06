@@ -109,6 +109,7 @@ def create_objective(model, transductor_model_file, logger, X, y, Xa, ya, wa, Xc
     i = []
     d = []
     auc_log = [0]
+    stats = []
 
     def objective(parameters):
         i.append(0)
@@ -132,20 +133,31 @@ def create_objective(model, transductor_model_file, logger, X, y, Xa, ya, wa, Xc
         cvm_loss = (1 if cvm > cvm_target else alpha) * (cvm - cvm_target)
         loss = -auc + ks_importance * ks_loss + cvm_importance * cvm_loss
 
+        iteration_stats = {
+            'auc': auc,
+            'ks': ks,
+            'cvm': cvm,
+            'loss': loss,
+            'dumped': False
+        }
+
         if ks < ks_threshold and cvm < cvm_threshold and auc > auc_log[0]:
             d.append(0)
             dump_transductor_model(model, transductor_model_file.format(len(d)))
+            iteration_stats['dumped'] = True
             auc_log.pop()
             auc_log.append(auc)
             message = "iteration {:7}: Best AUC={:7.5f} achieved, KS={:7.5f}, CVM={:7.5f}".format(len(i), auc, ks, cvm)
             logger.info(message)
+
+        stats.append(iteration_stats)
 
         if verbose:
             print("iteration {:7}: AUC: {:7.5f}, KS: {:7.5f}, CVM: {:7.5f}, loss: {:8.5f}".format(len(i),
                   auc, ks, cvm, loss))
         return loss
 
-    return objective, d
+    return objective, d, stats
 
 
 if __name__ == '__main__':
@@ -194,10 +206,12 @@ if __name__ == '__main__':
     logger.addHandler(hdlr)
     logger.setLevel(logging.INFO)
 
-    objective, dumped = create_objective(model, sh.transductor_model_file, logger,
-                                         Xt, yt, Xa, ya, wa, Xc, mc, verbose=True)
+    objective, dumped, stats = create_objective(model, sh.transductor_model_file,
+        logger, Xt, yt, Xa, ya, wa, Xc, mc, verbose=True)
 
     try:
         minimize(objective, weights0, args=(), method='Powell')
     except KeyboardInterrupt:
+        with open(sh.transductor_stats, 'wb') as f:
+            cPickle.dump(stats, f)
         print 'Dumped %d\nExiting...' % len(dumped)
