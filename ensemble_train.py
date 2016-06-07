@@ -10,7 +10,6 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation
 from keras.layers.advanced_activations import PReLU
 from keras.utils import np_utils
-from keras.utils import visualize_util
 import cPickle
 import argparse
 import glob
@@ -129,10 +128,6 @@ class EnsembleClassifier(object):
             with open(model_file, 'wb') as fid:
                 cPickle.dump(model, fid)
 
-    def save_model_im(self, n_inputs, to_file=sh.ensemble_model_im):
-        model = self._model_factory(n_inputs)
-        visualize_util.plot(model, to_file=to_file, show_shapes=True)
-
 
 if __name__ == '__main__':
 
@@ -159,7 +154,6 @@ if __name__ == '__main__':
         X, y, features = EnsembleClassifier.load_data(sh.training_path)
         X, X_valid, y, y_valid = train_test_split(X, y, test_size=.1)
         cls = EnsembleClassifier(n_models=args.n_models)
-        cls.save_model_im(X.shape[1])
         cls.fit(X, y, n_epochs=args.n_epochs, validation=(X_valid, y_valid))
         cls.save_models()
 
