@@ -42,8 +42,6 @@ transductor_stats = join(stats_path, 'transductor_stats.pkl')
 # Misc
 imgs_path = './imgs'
 ensemble_model_im = join(imgs_path, 'ensemble_net.png')
-ensemble_stats_im = join(imgs_path, 'ensemble_stats.png')
-transductor_stats_im = join(imgs_path, 'transductor_stats.png')
 
 
 # Constants

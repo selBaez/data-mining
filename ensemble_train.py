@@ -41,21 +41,21 @@ class EnsembleClassifier(object):
     def _model_factory(n_inputs):
         model = Sequential()
         model.add(Dense(75, input_dim=n_inputs))
-        model.add(PReLU(input_shape=(75,)))
+        model.add(PReLU())
 
         model.add(Dropout(0.11))
-        model.add(Dense(50, input_dim=75))
-        model.add(PReLU(input_shape=(50,)))
+        model.add(Dense(50))
+        model.add(PReLU())
 
         model.add(Dropout(0.09))
-        model.add(Dense(30, input_dim=50))
-        model.add(PReLU(input_shape=(30,)))
+        model.add(Dense(30))
+        model.add(PReLU())
 
         model.add(Dropout(0.07))
-        model.add(Dense(25, input_dim=30))
-        model.add(PReLU(input_shape=(25,)))
+        model.add(Dense(25))
+        model.add(PReLU())
 
-        model.add(Dense(2, input_dim=25))
+        model.add(Dense(2))
         model.add(Activation('softmax'))
         model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
