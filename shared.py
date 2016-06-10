@@ -30,7 +30,6 @@ models_path = './models'
 model_path_1st = join(models_path, '1st_model_{}.pkl')
 feature_scaler_1st = join(models_path, '1st_scaler.pkl')
 transductor_scaler_file = join(models_path, '2nd_scaler.pkl')
-transductor_pre_model_file = join(models_path, '2nd_transductor_pre.pkl')
 transductor_model_file = join(models_path, '2nd_transductor_{}.pkl')
 
 # Logs / stats

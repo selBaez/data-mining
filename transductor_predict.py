@@ -48,8 +48,6 @@ if __name__ == '__main__':
     print 'Start making predictions using transductors'
     transductors = []
     for filename in glob.glob(sh.transductor_model_file.format('*')):
-        if filename == sh.transductor_pre_model_file:
-            continue
         with open(filename, 'rb') as fid:
             transductors.append(cPickle.load(fid))
 

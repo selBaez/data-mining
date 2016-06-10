@@ -64,19 +64,19 @@ def create_model(n_inputs):
     print 'Creating model with %d inputs\n' % n_inputs
 
     model = Sequential()
-    model.add(Dense(50, input_dim=n_inputs))
+    model.add(Dense(75, input_dim=n_inputs))
     model.add(Activation('tanh'))
 
-    model.add(Dense(50, input_dim=50))
+    model.add(Dense(50))
     model.add(Activation('tanh'))
 
-    model.add(Dense(30, input_dim=50))
+    model.add(Dense(30))
     model.add(Activation('tanh'))
 
-    model.add(Dense(25, input_dim=30))
+    model.add(Dense(25))
     model.add(Activation('tanh'))
 
-    model.add(Dense(2, input_dim=25))
+    model.add(Dense(2))
     model.add(Activation('softmax'))
 
     model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
@@ -105,7 +105,7 @@ def dump_transductor_model(model, transductor_model_file):
 
 
 def create_objective(model, transductor_model_file, logger, X, y, Xa, ya, wa, Xc, mc,
-                     ks_threshold=0.08, cvm_threshold=0.002, verbose=True):
+                     ks_threshold=0.08, cvm_threshold=0.002, dump=30, verbose=True):
     i = []
     d = []
     auc_log = [0]
@@ -155,6 +155,10 @@ def create_objective(model, transductor_model_file, logger, X, y, Xa, ya, wa, Xc
         if verbose:
             print("iteration {:7}: AUC: {:7.5f}, KS: {:7.5f}, CVM: {:7.5f}, loss: {:8.5f}".format(len(i),
                   auc, ks, cvm, loss))
+
+        if len(d) == dump:
+            raise KeyboardInterrupt()
+
         return loss
 
     return objective, d, stats
@@ -163,8 +167,6 @@ def create_objective(model, transductor_model_file, logger, X, y, Xa, ya, wa, Xc
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Train transductors for the 2nd stage')
-    parser.add_argument('-pt', help='whether to use a pre-trained model', dest='pretrained', action='store_const',
-                        default=False, const=True)
     args = parser.parse_args()
 
     features, Xt, yt, _, _ = load_data_stacked(sh.training_path, sh.training_predictions_1st)    # shuffled
@@ -184,17 +186,9 @@ if __name__ == '__main__':
 
     model = create_model(Xt.shape[1])
 
-    if args.pretrained:
-        print 'Load pre-trained model'
-        with open(sh.transductor_pre_model_file, 'rb') as fid:
-            model = cPickle.load(fid)
-    else:
-        print 'Pre-train model'
-        yt_categorical = np_utils.to_categorical(yt, nb_classes=2)
-        model.fit(Xt, yt_categorical, batch_size=64, nb_epoch=1, verbose=2)
-        print 'Save pre-trained model'
-        with open(sh.transductor_pre_model_file, 'wb') as fid:
-            cPickle.dump(model, fid)
+    print 'Pre-train model'
+    yt_categorical = np_utils.to_categorical(yt, nb_classes=2)
+    model.fit(Xt, yt_categorical, batch_size=64, nb_epoch=20, verbose=2)
 
     weights0 = get_weights(model)
     print 'Optimize %d weights' % len(weights0)
@@ -207,7 +201,7 @@ if __name__ == '__main__':
     logger.setLevel(logging.INFO)
 
     objective, dumped, stats = create_objective(model, sh.transductor_model_file,
-        logger, Xt, yt, Xa, ya, wa, Xc, mc, verbose=True)
+        logger, Xt, yt, Xa, ya, wa, Xc, mc)
 
     try:
         minimize(objective, weights0, args=(), method='Powell')
