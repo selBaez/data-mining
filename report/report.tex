@@ -48,6 +48,7 @@ Amsterdam, Netherlands}}
 
 
 \section{Introduction}
+\label{sec:intro}
 % different techniques can be applied in one problem and the best on os not often obvious. 
 \texttt{Kaggle} \footnote{\url{https://www.kaggle.com/}} is a crowdsourcing platform where data mining and machine learning techniques are applied on open ended problems. It is the largest and most diverse data community in the world. In early 2016, the European Organization for Nuclear Research (CERN) launched a competition regarding the detection of an undiscovered phenomenon, called the charged lepton flavour violation \cite{hirsch2011charged}. 
 
@@ -73,7 +74,7 @@ The research question to be explored is \textit{How does an uneducated ensemble 
 \label{sec:hypothesis}
 We believe that data mining is powerful enough to achieve comparable performance even without domain knowledge. Yet, we recognize that achieving such accuracy requires proper tuning and a careful design of structures. 
 
-Our hypothesis is that by investing enough time in experimenting and fine tuning our model, a competitive score can be achieved. We measure the competitiveness by Kaggle's ranking system, and expect to rank among the top 3 competitors.
+Our hypothesis is that by investing enough time in experimenting and fine tuning our model, a competitive score can be achieved. We measure the competitiveness by Kaggle's ranking system, and expect to rank among the top five competitors.
 
 \subsection{Contribution}
 Although perfect score has already been achieved in this competition, the use of domain knowledge was crucial for it. Thus the main contribution of this paper is to prove that advance data mining techniques can alleviate our score to the one that the winners accomplished.
@@ -81,26 +82,35 @@ Although perfect score has already been achieved in this competition, the use of
 Furthermore, if our hypothesis proves to be correct, this work could be a stepping stone for applying data mining techniques in complex domains where knowledge is incomplete or uncertain. It could show the potential of data mining, by discovering patterns and insights, to boost scientific advances. 
 
 \subsection{Organization}
-The rest of the paper describes in detail the steps followed to achieve the stated objectives and test the hypothesis to our research question. First, Section~\ref{sec:related_work} explores some of the top the solutions submitted to Kaggle. Section~\ref{sec:dataset} describes the dataset and the competition regulations. Section~\ref{sec:system_design} depicts the model we proposed to tackle the classification task. Section~\ref{sec:experiment} refers to the experimental set up we use to test our model, while Section~\ref{sec:results} shows the results obtained. Finally, Section~\ref{sec:conclusion} summarizes our observations.
+This project follows the Cross Industry Standard Process for Data Mining (CRISP-DT) Framework. As such, this paper's sections correspond to the six phases of the process model. 
+
+Section ~\ref{sec:intro} has introduced some Business Understanding related to High Energy Physics, specifically the need for proving the violation of charged lepton flavour. Furthermore, Section~\ref{sec:related_work} explores different existing data mining approaches of Kaggle top competitors. We continue to gain some Data Understanding by describing the dataset and the competition tools and regulations in Section~\ref{sec:dataset}. The Data Preparation and Modeling steps are outlined in Section~\ref{sec:system_design}, where the data is cleaned and the model implementation is described. To Evaluate the classifier, we set up several experiments as depicted in Sections~\ref{sec:experiment} and ~\ref{sec:results}. Finally, Section~\ref{sec:conclusion} summarizes our observations throughout the process.
 
 \section{Related Work}
 \label{sec:related_work}
-In order to develop our solution for this competition we studied the solutions of other participants. Additionally, research was done in order to better understand the use of \textit{Ensemble Models} and \textit{Transfer Learning} in the context of solving a classification task.
+In order to develop our solution for this competition we studied the approaches of other participants. Additionally, research was done to better understand the use of \textit{Ensemble Models} and \textit{Transfer Learning} in the context of solving a classification task.
 
 \subsection{The Winner}
-The winners of this competition were \textit{Vlad Mironov} and \textit{Alexander Guschin} of team Go Polar Bears. They managed to reach 100\% by combining three main parts, \textit{feature engineering}, the \textit{agreement test} that was given and \textit{mass correlation}. In order to significantly reduce the Mass correlation error, the participants used the \textit{Extreme Gradient Boosting}, a method used widely by data scientists to achieve state-of-the-art results on many machine learning challenges as stated by Chen and Guestrin \cite{chen2016xgboost}. Additionally they used multilevel k-fold with bagging. It is worth mentioning that the participants experimented with other configurations such as increasing the number of layers and neurons, however no significant changes in Area Under Curve were observed.
+The winners of this competition were \textit{Vlad Mironov} and \textit{Alexander Guschin} of team Go Polar Bears. Their submission achieved 100\% accuracy by combining targeted solutions to the three main competition parts: improvement of the Area Under the Curve (AUC) score, and the given agreement and correlation tests.
+
+Mironov and Guschin's model has two main characteristics to be noted. First, using scholar physics equations they recreated properties such as \textit{speed}, \textit{flight distance}, and \textit{mass}. This feature engineering step turned out to be crucial for the accuracy achieved. In fact, Vicens Gaitan, another participant ranked 14th in the competition, stated that other models, like Deep Networks, could build a mass-like property like the feature Mironov and Guschin engineered. Yet, Gaitan believes that the mass of a $\tau$ particle is hard to locate, even for this powerful methods. 
+%TODO add citation to his blog http://blog.kaggle.com/2015/10/27/passing-the-tests-strategies-used-in-cerns-flavour-of-physics/
+
+Secondly, in order to significantly reduce the Mass correlation error, Mironov and Guschin used forests with \textit{Extreme Gradient Boosting}, a method used widely by data scientists to achieve state-of-the-art results on many machine learning challenges \cite{chen2016xgboost}. Parallelly, they used multilevel k-fold with bagging. 
+
+It is worth mentioning that the participants experimented with other configurations such as increasing the number of layers and neurons, however no significant changes in Area Under Curve were observed.
 
 \subsection{Transfer learning solution}
-- Explain what transfer learning is
-- Explain what ensemble is 
-- give credit to Joseph Slavicek
+The fifth ranked solution was submitted by Alexander Rakhlin and was based on transfer learning. This method assumes training and test data differ in some ways, a property extremely important for this specific competition. Furthermore, this method does not make ay domain specific assumptions and rather trains a model on a specific dataset and then applies this learned patterns? to a different dataset, regardless of their domain. 
+This is a fundamental difference from the winners' solution, since the model is not tailored to the Physics domain and their features are not manually engineered. 
+
+Ensemble of different neural networks. The three metrics AUC and the agreement and correlation metrics are taken into account into a loss function. This way, all of them are satisfied as result of statistical inference and not by coincidence.
+
 
 
 \section{The Dataset}
 \label{sec:dataset}
-
-%%%%%%
-The competition provides a \href{https://www.kaggle.com/c/flavours-of-physics/data}{Starter Kit}, training and test sets, a specific
+The competition provides a Starter Kit \footcite{\url{https://www.kaggle.com/c/flavours-of-physics/data}}, training and test sets, a specific
 submission format and a couple check files to evaluate the submitted data. This competition was closed only eight months ago, and it is still relevant in the field.
 %%%%%%
 Given data from the Large Hadron Collider (LHC) a classification task needed to be performed in order to determine the presence for the variable \textit{signal}.  The data have been collected directly at the
@@ -178,6 +188,8 @@ The data contained in this dataset consists of:
 Events related to the control channel are not used for scoring, but by the
 agreement check (Section~\ref{sec:agreement}). One should treat all samples as
 coming from the same collision channel during classification.
+
+%TODO tal about preprocessing somewhere. Own section? subsection? just a sentence?
 
 \section{System Design}
 \label{sec:system_design}
