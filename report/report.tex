@@ -219,60 +219,102 @@ are stacked with the original data to form an augmented dataset with as many new
 features as networks in the first stage's ensemble (that is each data-point is
 enriched with predictions from the ensemble).
 
+The software implementation has been done in Python using a number of different
+libraries for scientific computing (SciPy \cite{jones2015scipy} and
+NumPy\footnote{\url{http://www.numpy.org/}}), dataset management, manipulation
+and preprocessing (pandas\footnote{\url{http://pandas.pydata.org/}},
+scikit-learn \cite{pedregosa2011scikit}) and neural networks model building,
+training and evaluation (keras \footnote{\url{http://keras.io/}}). Keras is a
+full-featured deep learning framework that is able to work seamlessly using
+Theano \cite{bergstra2010theano} or TensorFlow \cite{abadi2016tensorflow} as
+backends, on CPU or GPU without changing the source code.
 
 \begin{figure}[h]
 		\centering
 		\begin{tikzpicture}[level distance=6.5em, edge from parent/.style={draw,-latex},
 		every node/.style = {shape=rectangle, rounded corners, draw, align=center,
 	top color=white, bottom color=blue!20}]]
-			\node[bottom color=yellow!20] {Input layer \\ Shape: (50, 75) \\ Activation: PReLU}
-			child { node {Hidden Layer 1 \\ Shape: (75, 50) \\ Dropout: 11\% \\ Activation: PReLU}
-			child { node {Hidden Layer 2 \\ Shape: (50, 30) \\ Dropout: 9\% \\ Activation: PReLU}
-			child { node {Hidden Layer 3 \\ Shape: (30, 25) \\ Dropout: 7\% \\ Activation: PReLU}
-			child { node[bottom color=red!20] {Output layer \\ Shape: (25, 2) \\ Activation: Softmax}
+			\node[bottom color=yellow!20] {Input layer: 50 \\ Output: 75 \\ Activation: PReLU}
+			child { node {Hidden Layer 1 \\ Output: 50 \\ Dropout: 11\% \\ Activation: PReLU}
+			child { node {Hidden Layer 2 \\ Output: 30 \\ Dropout: 9\% \\ Activation: PReLU}
+			child { node {Hidden Layer 3 \\ Output: 25 \\ Dropout: 7\% \\ Activation: PReLU}
+			child { node[bottom color=red!20] {Output layer \\ Output: 2 \\ Activation: Softmax}
 			}}}};
 		\end{tikzpicture}
 		\caption{Neural Network configuration for the first stage (ensemble learning).}
 		\label{fig:nn_ensemble_design}
 \end{figure}
 
-
-\subsection{Neural Networks design}
+\subsection{Ensemble Neural Network Design}
 \label{sec:NN_design}
-%TODO describe topologies and MOTIVATE THEM!
-Each neural network consists of 5 fully connected layers. The first 4 layers
-have a \textit{PReLU} activation function and the last one has a
-\textit{softmax} function. Furthermore, layers 2, 3, and 4 perform Dropout in
-order to avoid overfitting of the network. The input and output connections, as
-well as summary of the above characteristics, is shown in the following table:
+Each neural network consists has the same specification, as given in Figure
+\ref{fig:nn_ensemble_design}. It consists of 5 fully connected layers, the first
+4 layers have a \textit{PReLU} activation function and the last one has a
+\textit{softmax} one. The output layer has 2 outputs and this means that each
+output represents the probability of the example being or not being a signal
+respectively. We chose the \textit{PReLU} activation function because it is a
+trainable parametric \textit{Rectified Linear Unit} (ReLU)  and so takes off the
+burden of parameter tuning while leveraging an advanced and powerful activation
+function, as demonstrated in \cite{he2015delving}. A rectified activation
+function is of the form:
+\begin{equation}
+	f(y) = \begin{cases} y & \text{if } y > 0 \\ ay & \text{otherwise} \end{cases}
+	\label{eq:relu}
+\end{equation}
+where $y$ is the input to the activation function and $a$ is a coefficient
+controlling the slope of the negative part. When the coefficient is small, the
+activation function is known as \textit{LeakyReLU} and while used to prevent
+zero-gradients does not contribute to the performance of the model. The
+coefficients in the PReLU, as explained in more detail in \cite{he2015delving},
+can be learned jointly with the parameters of the model and the authors show
+that it can outperform other rectified units with a number of different model.
 
-\begin{table}
-	\centering
-	\begin{tabular}[H]{ l c c c c }
-		\textbf{Layer} & \textbf{\# inputs} & \textbf{\# outputs} &
-			\textbf{Dropout rate} & \textbf{Activation function} \\ \hline
-		\textit{Layer 1} & \# features & 75 & 0\% & PReLU \\
-		\textit{Layer 2} & 75 & 50 & 11\% & PReLU \\
-		\textit{Layer 3} & 50 & 30 & 9\% & PReLU \\
-		\textit{Layer 4} & 30 & 25 & 7\% & PReLU \\
-		\textit{Layer 5} & 25 & 2 & 0\% & softmax \\
-	\end{tabular}
-	\caption{Specification of the feed-forward Neural Network used in the first
-		stage of training the classifier.}
-	\label{tab:model1}
-\end{table}
+Furthermore, Dropout is applied on the hidden layers in order to avoid
+overfitting of the network and prevent that complex co-adaptation may occur in
+the feature detectors (neurons) of a large neural network, as proved by
+\cite{srivastava2014dropout, hinton2012improving}; we want to avoid overfitting
+on the training set more than usual in order to more easily apply transfer
+learning in a later stage; we want to prevent the classifier from learning
+weakly simulated signals and pass more easily the agreement and correlation
+tests. Dropout is a simple technique consisting in randomly omitting or
+disabling some neurons when a new training example is presented. The amount of
+disabled neurons is directly controlled by an hyperparameter.
 
-We use a \textit{Cross entropy} loss function.
+Training of the ensemble is done using only the training set and not the
+agreement and correlation sets. We use the \textit{bootstrapping} technique,
+which consists in using a different version of the dataset to train each network
+in the ensemble that is obtained by sampling uniformly with replacement from the
+original training set. It is commonly used to obtain an approximation of
+independent and identically distributed predictions and is the first step
+required to implement \textit{bagging}, a technique to reduce the variance of
+the predictions distribution. Bootstrapping has been applied successfully to
+ensemble of neural networks \cite{perrone1992networks, west2005neural}.
 
-\subsection{Model Ensemble}
-The first stage of training the full classifier consists in training an ensemble
-of feed-forward Neural Networks using the specifics from Table~\ref{tab:model1}.
-Training is done only on the training set using the \textit{bootstrapping}
-techniques, which consists in using a different sampled (with replacement)
-version of the dataset to train each network in the ensemble. Bootstrapping is a
-sampling technique used to obtain an approximation of independent and
-identically distributed predictions and is the first step required to implement
-\textit{bagging}, a technique to reduce the variance of the predictions.
+After experimentation, the chosen optimization algorithm is \textit{RMSProp}
+\cite{tieleman2012lecture} and the loss function to minimize is given by the
+\textit{categorical cross-entropy}. RMSProp is an adaptive learning rate
+optimization method that performs generally well for deep networks, as
+demonstrated in \cite{dauphin2015rmsprop, rudergradient, mnih2013playing}. Being
+adaptive means that fine tuning of its hyperparameters (learning rate among
+others) is a task with a lower priority than tuning, for example, dropout rates.
+The cross-entropy is a statistical measure, borrowed from information theory,
+formally defined over two distributions as the entropy of the first plus the
+Kullback-Leibler Divergence between the first and the second, in formula:
+\begin{equation}
+	\mathcal{H}(p, q) = \mathcal{H}[p] + \mathcal{KL}(p||q)
+	\label{eq:xentropy}
+\end{equation}
+It can be interpreted as the expected message-length per datum (in bits) when a
+wrong distribution $q$ is assumed while the data actually follows a distribution
+$p$. When used in data mining, the distribution $p$ represents the distribution
+of labels in the training set, that is the true distribution, while the $q$
+distribution represents the predicted labels. The cross-entropy then assumes the
+following form:
+\begin{equation}
+	\mathcal{H}(y, \hat{y}) = -y \log \hat{y} - (1 - y) \log (1 - \hat{y})
+	\label{eq:xentropy-dm}
+\end{equation}
+and is a quantity that we need to try to minimize.
 
 After training is complete we generate predictions for all four datasets and
 store them for the next stage. Predictions on the test set are also aggregated
@@ -280,42 +322,42 @@ using the mean to produce a \textit{majority vote} classification; this is a
 simple implementation of bagging and unfortunately it is not sufficient to pass
 the agreement and correlation tests.
 
-\begin{table} % TODO change me!
-	\centering
-	\begin{tabular}{ l c c c c }
-		\textbf{Layer} & \textbf{\# inputs} & \textbf{\# outputs} &
-			\textbf{Dropout rate} & \textbf{Activation function} \\ \hline
-		\textit{Layer 1} & \# features & 75 & 0\% & PReLU \\
-		\textit{Layer 2} & 75 & 50 & 11\% & PReLU \\
-		\textit{Layer 3} & 50 & 30 & 9\% & PReLU \\
-		\textit{Layer 4} & 30 & 25 & 7\% & PReLU \\
-		\textit{Layer 5} & 25 & 2 & 0\% & softmax \\
-	\end{tabular}
-	\caption{Specification of the feed-forward network used for transfer
-		learning.}
-	\label{tab:model2}
-\end{table}
+\begin{figure}[h]
+		\centering
+		\begin{tikzpicture}[level distance=6em, edge from parent/.style={draw,-latex},
+		every node/.style = {shape=rectangle, rounded corners, draw, align=center,
+	top color=white, bottom color=blue!20}]]
+			\node[bottom color=yellow!20] {Input layer: 50 + $N$ \\ Output: 75 \\ Activation: tanh}
+			child { node {Hidden Layer 1 \\ Output: 50 \\ Activation: tanh}
+			child { node {Hidden Layer 2 \\ Output: 30 \\ Activation: tanh}
+			child { node {Hidden Layer 3 \\ Output: 25 \\ Activation: tanh}
+			child { node[bottom color=red!20] {Output layer \\ Output: 2 \\ Activation: Softmax}
+			}}}};
+		\end{tikzpicture}
+		\caption{Neural Network configuration for the second stage (transfer learning).}
+		\label{fig:nn_trans_design}
+\end{figure}
 
 \subsection{Transfer Learning}
 In the second stage of training we create a single Neural Network with the
-specifications given in Table~\ref{tab:model2} and its weights are initialized
-with an epoch of cross-entropy optimization on the training data. Then an
-optimization algorithm (using scipy and Powell's method) is executed that tries
-to minimize a loss function that incorporates AUC on the training set,
-Kolmogorov-Smirnov on agreement set and Cramer-von Mises on the correlation set
-in the following way:
-
+specifications given in Figure \ref{fig:nn_trans_design} and its weights are
+initialized with a number of epochs of cross-entropy optimization on the
+training data. Then an optimization algorithm (using SciPy and Powell's method)
+is executed that tries to minimize a loss function that incorporates AUC on the
+training set, Kolmogorov-Smirnov on agreement set and Cramer-von Mises on the
+correlation set in the following way:
 \begin{align}
 	\mathcal{L} &= -\text{AUC} + \text{KS} + \text{CvM}
-	\label{eqn:loss}
+	\label{eq:loss}
 \end{align}
 
 The network is fed with the augmented data from the previous stage (original
-data plus predictions from the previous stage).  After each optimization
-iteration we check whether the KS and CvM metrics are less or equal to 0.09 and
-0.002 respectively and that the AUC is greater than the previous stored one. If
-all those three conditions are met, the network is stored for later use (e.g.
-prediction).
+data plus predictions from the previous stage) in order to implement stacking.
+By doing this we aim at learning a better representation for the data. After
+each optimization iteration we check whether the KS and CvM metrics are less or
+equal to 0.09 and 0.002 respectively and that the AUC is greater than the
+previous stored one. If all those three conditions are met, the network is
+stored for later use (e.g. prediction).
 
 Finally the generated ensemble of classifiers needs to be aggregated to form a
 single prediction per data point. This is done again with the bagging technique,
