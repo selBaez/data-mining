@@ -7,10 +7,10 @@ all:
 
 
 pdf:
-	pdflatex -output-directory ${report_dir} ${report_filename}.tex
+	pdflatex -output-directory ${report_dir} "\def\ismakefile{1} \input{"${report_filename}.tex"}"
 	@cd ${report_dir} && bibtex ${report_filename}
-	pdflatex -output-directory ${report_dir} ${report_filename}.tex
-	pdflatex -output-directory ${report_dir} ${report_filename}.tex
+	pdflatex -output-directory ${report_dir} "\def\ismakefile{1} \input{"${report_filename}.tex"}"
+	pdflatex -output-directory ${report_dir} "\def\ismakefile{1} \input{"${report_filename}.tex"}"
 
 read:
 	@cd ${report_dir} && mupdf ${report_filename}.pdf &

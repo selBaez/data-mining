@@ -22,6 +22,12 @@
 \tikzstyle{hidden neuron}=[neuron, fill=blue!50]
 \tikzstyle{annot}=[text width=4em, text centered]
 
+\ifdefined\ismakefile
+	\def\imgspath{./imgs}
+\else
+	\def\imgspath{../imgs}
+\fi
+
 \addbibresource{bibliography}
 
 \begin{document}
@@ -306,51 +312,51 @@ single prediction per data point. This is done again with the bagging technique,
 by taking a majority vote (simple average in this case, because prediction
 probabilities are required).
 
-\section{Experimental set up and results}
+\section{Experimental Set-up and Evaluation}
 \label{sec:experiment}
 To evaluate and exploit the system proposed, different optimization algorithms, dropout rates and pre-trained epochs were tested. However, during all of these we kept some parameters statics.
 
-First and foremost, during the ensemble stage we keep a constant number of $20$ neural network models trained for 75 epochs. The structure of each network is as explained in Section~\ref{sec:NN_design} and visualized in Figure ~\ref{fig:nn_ensemble_design}. During this stage a batch size of 64 is used for training and 256 for predicting. 
+First and foremost, during the ensemble stage we keep a constant number of $20$ neural network models trained for 75 epochs. The structure of each network is as explained in Section~\ref{sec:NN_design} and visualized in Figure ~\ref{fig:nn_ensemble_design}. During this stage a batch size of 64 is used for training and 256 for predicting.
 
-Secondly, during the transductor stage we have one neural network, as described in Section~\ref{sec:transductor} and visualized in Figure~\ref{fig:nn_trans_design}. We set the required thresholds for the agreement and correlation tests to $ks_threshold = 0.08$ and $cvm_threshold=0.002$. Moreover, we implement a stopping condition for producing only $30$ models, one at a time, which create predictions in order to try to pass the agreement and correlation test. 
+Secondly, during the transductor stage we have one neural network, as described in Section~\ref{sec:transductor} and visualized in Figure~\ref{fig:nn_trans_design}. We set the required thresholds for the agreement and correlation tests to $ks_threshold = 0.08$ and $cvm_threshold=0.002$. Moreover, we implement a stopping condition for producing only $30$ models, one at a time, which create predictions in order to try to pass the agreement and correlation test.
 
 \begin{figure}[!ht]
 	\centering
-	\includegraphics[width=.5\textwidth]{../imgs/ensemble_stats_d0.png}
+	\includegraphics[width=.5\textwidth]{\imgspath/ensemble_stats_d0.png}
 	\caption{Performance of the ensemble of neural networks $0$ Dropout rate}
 	\label{fig:dropout_0}
 \end{figure}
 
 \begin{figure}[!ht]
 	\centering
-	\includegraphics[width=.5\textwidth]{../imgs/ensemble_stats_d22.png}
+	\includegraphics[width=.5\textwidth]{\imgspath/ensemble_stats_d22.png}
 	\caption{Performance of the ensemble of neural networks with homogeneous Dropout rate of $22$}
 	\label{fig:dropout_22}
 \end{figure}
 
 \begin{figure}[!ht]
 	\centering
-	\includegraphics[width=.5\textwidth]{../imgs/ensemble_stats_d22_7.png}
+	\includegraphics[width=.5\textwidth]{\imgspath/ensemble_stats_d22_7.png}
 	\caption{Performance of the ensemble of neural networks with heterogeneous Dropout rate of $22, 14.5 and 7$ }
 	\label{fig:dropout_22_7}
 \end{figure}
 
 Given these static settings, we first experimented with different Dropout rates during the ensemble phase. Each rate was applied homogeneously to the first, second, and fourth hidden layers of each individual neural network. The third and fifth layers kept a static rate of $2$ and $4$ respectively. The rates tested were $0, 7, 11, and 22$. A special heterogeneous case was tested with rates $22, 14.5$ and $7$ applied to the dynamic layers.
 
-Figures~\ref{fig:dropout_0} and ~\ref{fig:dropout_22} show the results from the two extreme values of Dropout rates in our experimentation, with the x-axis representing the number of epochs and the y-axis reflecting the accuracy achieved. On the one hand, not having Dropout leads to divergence in accuracy between training and testing sets. On the other hand, a rate as high as $22$ reduces the gap. This enhances the importance of avoiding overfitting. 
+Figures~\ref{fig:dropout_0} and ~\ref{fig:dropout_22} show the results from the two extreme values of Dropout rates in our experimentation, with the x-axis representing the number of epochs and the y-axis reflecting the accuracy achieved. On the one hand, not having Dropout leads to divergence in accuracy between training and testing sets. On the other hand, a rate as high as $22$ reduces the gap. This enhances the importance of avoiding overfitting.
 
 As for the difference between homogeneous and heterogeneous rates throughout the network, Figure~\ref{fig:dropout_22_7} shows that both settings have similar behaviors, with no significant improvement on introducing heterogeneity. As a result, we realize that fine tuning on Dropout rates is not necessary.
 
 \begin{figure}[!ht]
 	\centering
-	\includegraphics[width=.5\textwidth]{../imgs/transductor_stats_pt1.png}
+	\includegraphics[width=.5\textwidth]{\imgspath/transductor_stats_pt1.png}
 	\caption{Performance of the ensemble of neural networks with homogeneous Dropout rate of $22$}
 	\label{fig:dropout_22}
 \end{figure}
 
 \begin{figure}[!ht]
 	\centering
-	\includegraphics[width=.5\textwidth]{../imgs/transductor_stats_pt30.png}
+	\includegraphics[width=.5\textwidth]{\imgspath/transductor_stats_pt30.png}
 	\caption{Performance of the ensemble of neural networks with heterogeneous Dropout rate of $22, 14.5 and 7$ }
 	\label{fig:dropout_22_7}
 \end{figure}
@@ -359,7 +365,7 @@ Secondly, we tested the length of pre-training for the transductor phase. To do 
 
 \begin{figure}[!ht]
 	\centering
-	\includegraphics[width=.5\textwidth]{../imgs/ensemble_stats_d11.png}
+	\includegraphics[width=.5\textwidth]{\imgspath/ensemble_stats_d11.png}
 	\caption{Performance of the ensemble of neural networks with the parameters
 	and training algorithm described in Section~\ref{sec:system_design}.}
 	\label{fig:ensemble_d11}
@@ -367,7 +373,7 @@ Secondly, we tested the length of pre-training for the transductor phase. To do 
 
 \begin{figure}[!ht]
 	\centering
-	\includegraphics[width=.5\textwidth]{../imgs/ensemble_stats_d11_adadelta.png}
+	\includegraphics[width=.5\textwidth]{\imgspath/ensemble_stats_d11_adadelta.png}
 	\caption{Performance of the ensemble of neural networks with the parameters
 	described in Section~\ref{sec:system_design}, a cross-entropy loss function
 	and ADADELTA as optimization algorithm.}
@@ -385,7 +391,7 @@ noticeably, it does not degrade as fast as for the ADADELTA optimizer.
 
 \begin{figure}[!ht]
 	\centering
-	\includegraphics[width=.5\textwidth]{../imgs/ensemble_stats_d11_kld.png}
+	\includegraphics[width=.5\textwidth]{\imgspath/ensemble_stats_d11_kld.png}
 	\caption{Performance of the ensemble of neural networks with the parameters
 	described in Section~\ref{sec:system_design} but the Kullback-Leibler
 	Divergence as loss function.}
@@ -399,6 +405,20 @@ loss function performs slightly worse on the training set, and has a
 significantly higher variance both on both data sets. However the negative slope
 of the accuracy on the validation data is higher for this metric than that for
 the cross-entropy.
+
+
+\section{Results}
+\label{sec:results}
+In this Section we are going to present the final scores and rank obtained on
+the test set after submission to Kaggle. The highest score that we registered is
+0.976174 on the public leaderboard and 0.975412 on the private one. Over all the
+trials that passed the correlation and agreement tests (18 in total) the mean is
+0.96984 and the standard deviation is 0.00461. Those results would have given
+use a rank in the second half of 500, between the score achieved by Hierarchical
+Gradient Boosting (benchmark for the competition at rank 570-571, used for
+actual $\tau \rightarrow 3\mu$ analysis at LHCb) with a score of 0.976709 and
+Gradient Boosting (another benchmark ranked at 587-588) with a score of
+0.971025.
 
 
 \section{Conclusion}
@@ -471,6 +491,6 @@ Follows a list of available features for training:
 	\item \texttt{signal}~-- is the target variable to predict.
 \end{itemize}
 
-%\printbibliography
+\printbibliography
 
 \end{document}
