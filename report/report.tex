@@ -215,13 +215,8 @@ coefficients in the PReLU, as explained in more detail in \cite{he2015delving},
 can be learned jointly with the parameters of the model and the authors show
 that it can outperform other rectified units with a number of different model.
 
-Furthermore, Dropout is applied on the hidden layers in order to avoid
-overfitting of the network and prevent that complex co-adaptation may occur in
-the feature detectors (neurons) of a large neural network, as proved by
-\cite{srivastava2014dropout, hinton2012improving}; we want to avoid overfitting
-on the training set more than usual in order to more easily apply transfer
-learning in a later stage; we want to prevent the classifier from learning
-weakly simulated signals and pass more easily the agreement and correlation
+Additionally, \textit{Dropout} is applied on the hidden layers in order to avoid
+overfitting and prevent the complex co-adaptation in feature detectors (neurons) of a large neural network, as proved by \cite{srivastava2014dropout, hinton2012improving}. Particular attention is put in avoiding overfitting, because the performance of transfer learning at latter stages depends on it. Furthermore, Dropout helps to prevent the classifier from learning weakly simulated signals and pass the agreement and correlation
 tests. Dropout is a simple technique consisting in randomly omitting or
 disabling some neurons when a new training example is presented. The amount of
 disabled neurons is directly controlled by an hyperparameter.
@@ -312,12 +307,15 @@ probabilities are required).
 
 \section{Experimental set up}
 \label{sec:experiment}
-- how experiments have been ran (split training / test set, epochs, number of models, static parameters) (DIMITRIS)
--thing tested, so one on optimization algo, (ANDREA)
-- one on dropout and (SEL)
-- one on pretrain epochs (SEL)
+To evaluate and exploit the system proposed, different optimization algorithms, dropout rates and pretrained epochs were tested. However, during all of these we kept some parameters statics.
 
+First and foremost, during the ensemble stage we keep a constant number of 20 neural network models trained for 75 epochs. The structure of each network is as explained in Section~\ref{sec:NN_design} and visualized in Figure ~\ref{fig:nn_ensemble_design}. 
 
+%TODO optimization algo, (ANDREA)
+
+Then, we experimented with different Dropout rates during the ensemble phase. Each rate was applied homogeneously to the first, second, and fourth hidden layers. The third and fifth layers kept a static rate of 2 and 4 respectively. The rates tested were 0, 7, 11, and 22. A special heterogeneous case was tested with rates 22, 14,5 and 7 applied to the dynamic layers.
+
+Finally, we tested the length of pretraining for the transductor phase. To do so, the number of epochs ranged from 1 to 30. 
 
 
 \section{Results}
