@@ -88,7 +88,7 @@ Section ~\ref{sec:intro} has introduced some Business Understanding related to H
 
 \section{Related Work}
 \label{sec:related_work}
-In order to develop our solution for this competition we studied the approaches of other participants. Additionally, research was done to better understand the use of \textit{Ensemble Models} and \textit{Transfer Learning} in the context of solving a classification task.
+In order to develop our solution for this competition we studied the approaches of other participants. We focus on the winner's solution, since it achieved a perfect score, and on the fifth ranked solution, since it is similar to our chosen model.
 
 \subsection{The Winner}
 The winners of this competition were \textit{Vlad Mironov} and \textit{Alexander Guschin} of team Go Polar Bears. Their submission achieved 100\% accuracy by combining targeted solutions to the three main competition parts: improvement of the Area Under the Curve (AUC) score, and the given agreement and correlation tests.
@@ -101,82 +101,41 @@ Secondly, in order to significantly reduce the Mass correlation error, Mironov a
 It is worth mentioning that the participants experimented with other configurations such as increasing the number of layers and neurons, however no significant changes in Area Under Curve were observed.
 
 \subsection{Transfer learning solution}
-The fifth ranked solution was submitted by Alexander Rakhlin and was based on transfer learning. This method assumes training and test data differ in some ways, a property extremely important for this specific competition. Furthermore, this method does not make ay domain specific assumptions and rather trains a model on a specific dataset and then applies this learned patterns? to a different dataset, regardless of their domain.
-This is a fundamental difference from the winners' solution, since the model is not tailored to the Physics domain and their features are not manually engineered.
+The fifth ranked solution was submitted by Alexander Rakhlin and was based on transfer learning. This method assumes training and test data differ in some ways, a property extremely important for this competition. Furthermore, transfer learning does not require any prior domain knowledge but rather trains a model on a dataset and then applies the learned patterns to a different related one. This is a fundamental difference from the winners' solution, since the model is not tailored to the Physics domain and their features are not manually engineered.
 
-Ensemble of different neural networks. The three metrics AUC and the agreement and correlation metrics are taken into account into a loss function. This way, all of them are satisfied as result of statistical inference and not by coincidence.
-
-
+A second highlight of this solution is the concept of ensemble neural networks. By combining the output of a large enough number of networks, a robust classifier is built. Furthermore, different from other solutions that output a result and then hope to pass the competition's tests, this model incorporates the three metrics (AUC and the agreement and correlation metrics) into the networks loss function. This ensures all of them are satisfied as result of statistical inference and not by coincidence.
 
 \section{The Dataset}
 \label{sec:dataset}
-The competition provides a Starter Kit \footnote{\url{https://www.kaggle.com/c/flavours-of-physics/data}}, training and test sets, a specific
-submission format and a couple check files to evaluate the submitted data. This competition was closed only eight months ago, and it is still relevant in the field.
-%%%%%%
-Given data from the Large Hadron Collider (LHC) a classification task needed to be performed in order to determine the presence for the variable \textit{signal}.  The data have been collected directly at the
-LHC during experiments with high energy particles collisions. The dataset
-consists of a collection of collision events and their properties. The objective
-of the Kaggle competition was to predict whether a $\tau \rightarrow 3\mu$ decay
-(the one that identifies a lepton flavour) was present in the collision. From
-scientists this phenomenon is supposed \emph{not} to happen, so the goal of the
-competition was to discover $\tau \rightarrow 3\mu$ happening more frequently
-than scientists currently expect.
+Given data from the Large Hadron Collider (LHC), proving the violation of the charged lepton flavour translates into a boolean classification task that determines the presence for the variable \textit{signal}.  The data has been collected directly at the
+LHC during experiments with high energy particles collisions. The dataset consists of a collection of collision events and their properties. The objective of the competition is to predict whether a $\tau \rightarrow 3\mu$ decay (the one that identifies a lepton flavour) was present in the collision. 
+
+The competition provides a training and a test set, files to apply the agreement and correlation tests, as well as a format for submissions. A Starter Kit \footnote{\url{https://github.com/yandexdataschool/flavours-of-physics-start}} for different programming languages was made available, and the evaluation of them could only be done through the Kaggle platform. 
 
 \subsection{Training Data}
-For training there is a labeled dataset ready to be used to train a classifier.
-The label, marked as \texttt{signal} with range in ${0,1}$ where 1 identifies
-signal events while 0 represents background events. Signal events have been
-simulated while background events come from real data collected by the LHCb
-detectors, observing collision of accelerated particles with a specific mass
-range in which $\tau \rightarrow 3\mu$ can't happen.
+A ready-to-use labeled dataset was provided to use for training the classifier. The label, marked as \texttt{signal} is boolean where 1 identifies signal events while 0 represents background events. Signal events come from simulations. Background events come from real data collected by the LHCb, while observing collisions of accelerated particles with a specific mass range, in which $\tau \rightarrow 3\mu$, according to the Standard Model of particle physics, cannot happen.
 
-The training dataset is given is CSV format and contains 49 features plus target
-label. For a detailed description of the features see
-Appendix~\ref{sec:features}
+The training dataset is given is CSV format and contains 49 features plus the target label. For a detailed description of the features see Appendix~\ref{sec:features}
 
-\subsection{Testing}
-For this Kaggle competition the submission procedure is different from the usual
-ones. The dataset comes with, besides a test set, an \textit{agreement} and a
-\textit{correlation} set. Any submission has to pass the agreement and
-correlation checks before being scored on the test set.
+\subsection{Evaluation requirements}
+For this specific Kaggle competition the submission procedure is quite peculiar. Apart from the test set, the dataset comes with an \textit{agreement} and a \textit{correlation} set. In order for a submission to be scored on the test set, it needs to pass the agreement and correlation checks as a precondition.
 
 \subsubsection{Agreement Test}
 \label{sec:agreement}
-The agreement dataset contains real and simulated events for a much more known,
-observed and understood decay: $Ds \rightarrow \varphi\pi$. The motivation for
-this check is that since the training set contains simulated data (for a
-phenomenon not well understood), it is possible for the classifier to reach high
-performances by picking up features that are not well modeled by the simulation.
-The check then requires the classifier not to expose a large discrepancy when
-applied to real-world and simulated data.
+Besides the presence of the $\tau \rightarrow 3\mu$ decay, there may be other obscure features that differentiate real from simulated data. Thus, it is possible for a classifier to reach high performances by picking up features that are not well modeled by the simulation. For this reason, contestants need to pass the Agreement Test.
 
-For this score, we are provided with a dataset on the control channel $Ds
-\rightarrow \varphi\pi$ which has the same features as the training set. This
-type of decay is not present in the training data. The
-\textit{Kolmogorov-Smirnov} test is used to evaluate the differences between
-real and simulated data between the classifier distribution on each sample.
-The Kolmogorov-Smirnov metric has to be smaller than 0.09 to pass the agreement
-check.
+The agreement dataset regards real and simulated events for an already known, observed and understood decay: $Ds \rightarrow \varphi\pi$. The control channel $Ds
+\rightarrow \varphi\pi$ has similar properties as the $\tau \rightarrow 3\mu$ and may be present in real and simulated data. In order to apply the agreement test, all the training data provided contains the control decay signal, regardless of its origin, while it is completely absent in the test set. The \textit{Kolmogorov-Smirnov} test is used to evaluate the classifier distribution on real and simulated samples. Hence, in order to pass the agreement test, The Kolmogorov-Smirnov metric has to be smaller than 0.09.
 
 \subsubsection{Correlation Test}
 \label{sec:correlation}
-This test checks whether the classifier is uncorrelated with the $\tau$ mass.
-Because mass is a measured quantity, scientists don't trust it when building a
-model. Correlation with mass in an artificial signal-like peak or lead to
-incorrect estimations of background signals.
+In Physics, mass is not considered to be a reliable quantity to build a model around. For example, correlation with mass can cause artificial signal-like peaks or lead to incorrect estimation of background signals. For this reason it is important to check that the classifier's output is uncorrelated to the $\tau$ mass. 
 
-The \texttt{mass} column is not included in the test dataset. However, this hidden
-mass information is used to perform a \textit{Cramer-von Mises} test,
-iteratively comparing two distributions of a.\ predicted values from submission
-for entire dataset and b.\ predicted values within a certain mass region in
-rolling window fashion along the whole mass range. Getting similar distributions
-for all mass sub-regions means that the classifier is not correlated with the
-mass. The submission must give a Cramer-von Mises value less than 0.002 to pass
-the correlation test.
+As such, the \texttt{mass} column is not included in the test dataset. However, there is hidden mass information that is used to perform a \textit{Cramer-von Mises} test. In sliding window fashion along the whole mass range, the CVM test iteratively compares the predicted values for entire dataset with the ones within a certain mass region. Getting similar distributions for all mass sub-regions means that the classifier is not correlated with the mass. Therefore, a well-designed classifier must yield to a value below 0.002 to pass the correlation test.
 
-\subsubsection{Test Set}
+\subsection{Test Set}
 \label{sec:test-set}
-The test set has the same columns that the training set has except for
+The test set has the same features as the training set has except for
 \texttt{mass}, \texttt{production}, \texttt{min\_ANNmuon} and \texttt{signal}.
 The data contained in this dataset consists of:
 \begin{enumerate}
@@ -185,29 +144,16 @@ The data contained in this dataset consists of:
 	\item simulated events for the $Ds \rightarrow \varphi\pi$;
 	\item real background events for $Ds \rightarrow \varphi\pi$.
 \end{enumerate}
-Events related to the control channel are not used for scoring, but by the
+
+Events related to the control channel are not used for scoring, but only for the
 agreement check (Section~\ref{sec:agreement}). One should treat all samples as
 coming from the same collision channel during classification.
 
-%TODO tal about preprocessing somewhere. Own section? subsection? just a sentence?
+\subsection{Data preprocessing}
+Since the goal of this project is to prove that domain knowledge is not necessary for achieving high accuracy in the posed classification task, we do not perform complex feature engineering. However, some data mining techniques, especially neural networks, are known to benefit from preprocessed inputs. As such, we perform basic preprocessing by removing the mean and scaling to unit variance.
 
 \section{System Design}
 \label{sec:system_design}
-The biggest challenge of this classification task is due to the evaluation
-requirements. Since the training dataset contains both simulated and real-world
-signals, the classifier is required to pass an agreement test. The purpose of
-this test is to be sure that the distribution of predictions for real-world data
-is similar to the one for simulated signals (recall that the test set comprehends
-both $\tau \rightarrow 3\mu$ and $Ds \rightarrow \varphi\pi$ and competitors are
-required to treat them equally during classification). The agreement test is
-implemented by means of the Kolmogorov-Smirnov test, for which the required
-metric has to be lower than 0.09. In a very similar way the classifier is
-tested for correlation with the \texttt{mass} feature. This is because in physics the
-mass of a particle is not believed to be a trustworthy feature when it comes to
-building models. So a classifier has to pass a correlation test implemented
-through a Cramer-von Mises test which has to return a score lower or equal to
-0.002.
-
 We build our model based on the Ensemble learning set of classifiers and apply
 different variations and heuristics to the basic concepts, such as bagging and
 stacking. The model consists of a composition of ensemble classifiers
@@ -366,15 +312,11 @@ probabilities are required).
 
 \section{Experimental set up}
 \label{sec:experiment}
+- how experiments have been ran (split training / test set, epochs, number of models, static parameters) (DIMITRIS)
+-thing tested, so one on optimization algo, (ANDREA)
+- one on dropout and (SEL)
+- one on pretrain epochs (SEL)
 
-\subsection{Implementation}
-\label{sec:implementation}
-
-
-\subsection{Training}
-
-
-\subsection{Testing/Evaluation}
 
 
 
@@ -451,6 +393,6 @@ Follows a list of available features for training:
 	\item \texttt{signal}~-- is the target variable to predict.
 \end{itemize}
 
-\printbibliography
+%\printbibliography
 
 \end{document}
