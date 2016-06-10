@@ -108,9 +108,9 @@ A second highlight of this solution is the concept of ensemble neural networks. 
 \section{The Dataset}
 \label{sec:dataset}
 Given data from the Large Hadron Collider (LHC), proving the violation of the charged lepton flavour translates into a boolean classification task that determines the presence for the variable \textit{signal}.  The data has been collected directly at the
-LHC during experiments with high energy particles collisions. The dataset consists of a collection of collision events and their properties. The objective of the competition is to predict whether a $\tau \rightarrow 3\mu$ decay (the one that identifies a lepton flavour) was present in the collision. 
+LHC during experiments with high energy particles collisions. The dataset consists of a collection of collision events and their properties. The objective of the competition is to predict whether a $\tau \rightarrow 3\mu$ decay (the one that identifies a lepton flavour) was present in the collision.
 
-The competition provides a training and a test set, files to apply the agreement and correlation tests, as well as a format for submissions. A Starter Kit \footnote{\url{https://github.com/yandexdataschool/flavours-of-physics-start}} for different programming languages was made available, and the evaluation of them could only be done through the Kaggle platform. 
+The competition provides a training and a test set, files to apply the agreement and correlation tests, as well as a format for submissions. A Starter Kit \footnote{\url{https://github.com/yandexdataschool/flavours-of-physics-start}} for different programming languages was made available, and the evaluation of them could only be done through the Kaggle platform.
 
 \subsection{Training Data}
 A ready-to-use labeled dataset was provided to use for training the classifier. The label, marked as \texttt{signal} is boolean where 1 identifies signal events while 0 represents background events. Signal events come from simulations. Background events come from real data collected by the LHCb, while observing collisions of accelerated particles with a specific mass range, in which $\tau \rightarrow 3\mu$, according to the Standard Model of particle physics, cannot happen.
@@ -129,7 +129,7 @@ The agreement dataset regards real and simulated events for an already known, ob
 
 \subsubsection{Correlation Test}
 \label{sec:correlation}
-In Physics, mass is not considered to be a reliable quantity to build a model around. For example, correlation with mass can cause artificial signal-like peaks or lead to incorrect estimation of background signals. For this reason it is important to check that the classifier's output is uncorrelated to the $\tau$ mass. 
+In Physics, mass is not considered to be a reliable quantity to build a model around. For example, correlation with mass can cause artificial signal-like peaks or lead to incorrect estimation of background signals. For this reason it is important to check that the classifier's output is uncorrelated to the $\tau$ mass.
 
 As such, the \texttt{mass} column is not included in the test dataset. However, there is hidden mass information that is used to perform a \textit{Cramer-von Mises} test. In sliding window fashion along the whole mass range, the CVM test iteratively compares the predicted values for entire dataset with the ones within a certain mass region. Getting similar distributions for all mass sub-regions means that the classifier is not correlated with the mass. Therefore, a well-designed classifier must yield to a value below 0.002 to pass the correlation test.
 
@@ -307,15 +307,57 @@ probabilities are required).
 
 \section{Experimental set up}
 \label{sec:experiment}
-To evaluate and exploit the system proposed, different optimization algorithms, dropout rates and pretrained epochs were tested. However, during all of these we kept some parameters statics.
+To evaluate and exploit the system proposed, different optimization algorithms, dropout rates and pre-trained epochs were tested. However, during all of these we kept some parameters statics.
 
-First and foremost, during the ensemble stage we keep a constant number of 20 neural network models trained for 75 epochs. The structure of each network is as explained in Section~\ref{sec:NN_design} and visualized in Figure ~\ref{fig:nn_ensemble_design}. 
-
-%TODO optimization algo, (ANDREA)
+First and foremost, during the ensemble stage we keep a constant number of 20 neural network models trained for 75 epochs. The structure of each network is as explained in Section~\ref{sec:NN_design} and visualized in Figure ~\ref{fig:nn_ensemble_design}.
 
 Then, we experimented with different Dropout rates during the ensemble phase. Each rate was applied homogeneously to the first, second, and fourth hidden layers. The third and fifth layers kept a static rate of 2 and 4 respectively. The rates tested were 0, 7, 11, and 22. A special heterogeneous case was tested with rates 22, 14,5 and 7 applied to the dynamic layers.
 
-Finally, we tested the length of pretraining for the transductor phase. To do so, the number of epochs ranged from 1 to 30. 
+Finally, we tested the length of pre-training for the transductor phase. To do so, the number of epochs ranged from 1 to 30.
+
+\begin{figure}[!ht]
+	\centering
+	\includegraphics[width=.5\textwidth]{./imgs/ensemble_stats_d11.png}
+	\caption{Performance of the ensemble of neural networks with the parameters
+	and training algorithm described in Section~\ref{sec:system_design}.}
+	\label{fig:ensemble_d11}
+\end{figure}
+
+\begin{figure}[!ht]
+	\centering
+	\includegraphics[width=.5\textwidth]{./imgs/ensemble_stats_d11_adadelta.png}
+	\caption{Performance of the ensemble of neural networks with the parameters
+	described in Section~\ref{sec:system_design}, a cross-entropy loss function
+	and ADADELTA as optimization algorithm.}
+	\label{fig:ensemble_d11_adadelta}
+\end{figure}
+
+We tried also changing the optimization algorithm used to train the model. In
+Figure~\ref{fig:ensemble_d11} is shown the performance of the ensemble of models
+using the RMSProp algorithm, as described in Section \ref{sec:system_design}. In
+Figure~\ref{fig:ensemble_d11_adadelta} instead we present the results for the
+ADADELTA optimizer \cite{zeiler2012adadelta}. It is easy to see that the RMSProp
+implementation outperforms ADADELTA on the training set, reaching higher
+accuracy. The variance of the accuracy on the validation set is higher for
+RMSProp which is probably a good thing for this kind of task, but more
+noticeably, it does not degrade as fast as for the ADADELTA optimizer.
+
+\begin{figure}[!ht]
+	\centering
+	\includegraphics[width=.5\textwidth]{./imgs/ensemble_stats_d11_kld.png}
+	\caption{Performance of the ensemble of neural networks with the parameters
+	described in Section~\ref{sec:system_design} but the Kullback-Leibler
+	Divergence as loss function.}
+	\label{fig:ensemble_d11_kld}
+\end{figure}
+
+As for the loss function, we decided to experiment with the Kullback-Leibler
+Divergence directly, as an alternative to the cross-entropy. The performance
+results of the ensemble are given in Figure~\ref{fig:ensemble_d11_kld}. This
+loss function performs slightly worse on the training set, and has a
+significantly higher variance both on both data sets. However the negative slope
+of the accuracy on the validation data is higher for this metric than that for
+the cross-entropy.
 
 
 \section{Results}
@@ -391,6 +433,6 @@ Follows a list of available features for training:
 	\item \texttt{signal}~-- is the target variable to predict.
 \end{itemize}
 
-%\printbibliography
+\printbibliography
 
 \end{document}
