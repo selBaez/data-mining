@@ -57,7 +57,7 @@ The Standard Model of particle physics considers symmetry to be a crucial proper
 \subsection{Objectives}
 The domain of particle physics is complex and has been slowly developing for the past decades. Incorporating this knowledge into data mining techniques can be time consuming, specially if the data scientists has no prior experience in the field.
 
-%TODO explain transfer learning is one of the chosen techniques taht can easily be applied without domain knowledge
+A possible solution for this has emerged from transfer learning, where knowledge from one task can be applied partially to a different task. 
 
 Hence, the two main objectives of this paper are:
 
@@ -314,6 +314,8 @@ First and foremost, during the ensemble stage we keep a constant number of $20$ 
 
 Secondly, during the transductor stage we have one neural network, as described in Section~\ref{sec:transductor} and visualized in Figure~\ref{fig:nn_trans_design}. We set the required thresholds for the agreement and correlation tests to $ks_threshold = 0.08$ and $cvm_threshold=0.002$. Moreover, we implement a stopping condition for producing only $30$ models, one at a time, which create predictions in order to try to pass the agreement and correlation test. 
 
+%Equal importance to AUC, and agreement and correlation metrics. Linear combination
+
 \begin{figure}[!ht]
 	\centering
 	\includegraphics[width=.5\textwidth]{../imgs/ensemble_stats_d0.png}
@@ -345,17 +347,19 @@ As for the difference between homogeneous and heterogeneous rates throughout the
 	\centering
 	\includegraphics[width=.5\textwidth]{../imgs/transductor_stats_pt1.png}
 	\caption{Performance of the ensemble of neural networks with homogeneous Dropout rate of $22$}
-	\label{fig:dropout_22}
+	\label{fig:transductor_1}
 \end{figure}
 
 \begin{figure}[!ht]
 	\centering
 	\includegraphics[width=.5\textwidth]{../imgs/transductor_stats_pt30.png}
 	\caption{Performance of the ensemble of neural networks with heterogeneous Dropout rate of $22, 14.5 and 7$ }
-	\label{fig:dropout_22_7}
+	\label{fig:transductor_30}
 \end{figure}
 
-Secondly, we tested the length of pre-training for the transductor phase. To do so, the number of epochs ranged from 1 to 30.
+Secondly, we tested the length of pre-training for the transductor phase. To do so, the number of epochs for pre-training ranged within $1, 10, 20$ and $30$.
+
+Figures~\ref{fig:transductor_1} and \ref{fig:transductor_30} show the contributions of the AUC, agreement metric (KS), correlation metric (CVM) have to the aggregated loss function against the iterations of minimization. No evidence for significant improvement is detected when increasing the length of pre-training, however, no conclusion can be reached and further experimentation might be needed.
 
 \begin{figure}[!ht]
 	\centering
@@ -374,7 +378,7 @@ Secondly, we tested the length of pre-training for the transductor phase. To do 
 	\label{fig:ensemble_d11_adadelta}
 \end{figure}
 
-We tried also changing the optimization algorithm used to train the model. Figure~\ref{fig:ensemble_d11} shows the performance of the ensemble of models
+Lastly, we experimented with changing the optimization algorithm used to train the model. Figure~\ref{fig:ensemble_d11} shows the performance of the ensemble of models
 using the RMSProp algorithm, as described in Section \ref{sec:system_design}. In
 Figure~\ref{fig:ensemble_d11_adadelta} instead we present the results for the
 ADADELTA optimizer \cite{zeiler2012adadelta}. It is easy to see that the RMSProp
