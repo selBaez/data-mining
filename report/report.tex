@@ -56,14 +56,15 @@ Amsterdam, Netherlands}}
 \section{Introduction}
 \label{sec:intro}
 % different techniques can be applied in one problem and the best on os not often obvious.
-\texttt{Kaggle} \footnote{\url{https://www.kaggle.com/}} is a crowdsourcing platform where data mining and machine learning techniques are applied on open ended problems. It is the largest and most diverse data community in the world. In early 2016, the European Organization for Nuclear Research (CERN) launched a competition regarding the detection of an undiscovered phenomenon, called the charged lepton flavour violation \cite{hirsch2011charged}.
+\textit{Kaggle} \footnote{\url{https://www.kaggle.com/}} is a crowdsourcing platform where data mining and machine learning techniques are applied on open ended problems. It is the largest and most diverse data community in the world. In early 2016, the European Organization for Nuclear Research (CERN) launched a competition regarding the detection of an undiscovered phenomenon, called the charged lepton flavour violation \cite{hirsch2011charged}.
 
 The Standard Model of particle physics considers symmetry to be a crucial property. However in many proposed extensions of that model this symmetry does not exist, implying that decays that do not conserve lepton flavour are possible. Observation of this decay would be a clear indication of the violation of lepton flavour and a sign of long-sought new physics.
 
 \subsection{Objectives}
+\label{sec:objectives}
 The domain of particle physics is complex and has been slowly developing for the past decades. Incorporating this knowledge into data mining techniques can be time consuming, specially if the data scientists has no prior experience in the field.
 
-A possible solution for this has emerged from transfer learning, where knowledge from one task can be applied partially to a different task. 
+A possible solution for this has emerged from transfer learning, where knowledge from one task can be applied partially to a different task.
 
 Hence, the two main objectives of this paper are:
 
@@ -155,7 +156,7 @@ Events related to the control channel are not used for scoring, but only for the
 agreement check (Section~\ref{sec:agreement}). One should treat all samples as
 coming from the same collision channel during classification.
 
-\subsection{Data preprocessing}
+\subsection{Data Preprocessing}
 Since the goal of this project is to prove that domain knowledge is not necessary for achieving high accuracy in the posed classification task, we do not perform complex feature engineering. However, some data mining techniques, especially neural networks, are known to benefit from preprocessed inputs. As such, we perform basic preprocessing by removing the mean and scaling to unit variance.
 
 \section{System Design}
@@ -314,60 +315,35 @@ probabilities are required).
 
 \section{Experimental Set-up and Evaluation}
 \label{sec:experiment}
-To evaluate and exploit the system proposed, different optimization algorithms, dropout rates and pre-trained epochs were tested. However, during all of these we kept some parameters statics.
+To evaluate and exploit the system proposed, different optimization algorithms,
+dropout rates and pre-trained epochs were tested. However, during all of these
+we kept some parameters statics.
 
-First and foremost, during the ensemble stage we keep a constant number of $20$ neural network models trained for 75 epochs. The structure of each network is as explained in Section~\ref{sec:NN_design} and visualized in Figure ~\ref{fig:nn_ensemble_design}. During this stage a batch size of 64 is used for training and 256 for predicting.
+First and foremost, during the ensemble stage we keep a constant number of $20$
+neural network models trained for 75 epochs. The structure of each network is as
+explained in Section~\ref{sec:NN_design} and visualized in Figure
+~\ref{fig:nn_ensemble_design}. During this stage a batch size of 64 is used for
+training and 256 for predicting. We split the original training dataset in two
+so to leave a fraction of the data for evaluation. Specifically we use 90\% of
+the data for training and the remaining 10\% for evaluation.
 
-Secondly, during the transductor stage we have one neural network, as described in Section~\ref{sec:transductor} and visualized in Figure~\ref{fig:nn_trans_design}. We set the required thresholds for the agreement and correlation tests to $ks_threshold = 0.08$ and $cvm_threshold=0.002$. It is worth mentioning that first we tried a threshold of $ks_threshold = 0.9$, but it was not sufficient to pass the competition's regulations. therefore, a lower value was applied to latter experiments.
+Secondly, during the transductor stage we have one neural network, as described
+in Section~\ref{sec:transductor} and visualized in
+Figure~\ref{fig:nn_trans_design}. We set the required thresholds for the
+agreement and correlation tests to $ks\_threshold = 0.08$ and $cvm\_threshold =
+0.002$. It is worth mentioning that first we tried a threshold of $ks\_threshold =
+0.09$, but it was not sufficient to pass the competition's regulations.
+Therefore, a lower value was applied to latter experiments.
 
-Finally, we implement a stopping condition for producing only $30$ models, one at a time, which create predictions in order to try to pass the agreement and correlation test.
+Finally, we implement a stopping condition for producing only $30$ transductor
+models, one at a time, which create predictions in order to try to pass the
+agreement and correlation test. Through experimentation we have found that the
+specification given in Section \ref{sec:system_design} is the one that performs
+best, as proven by the chart in Figure~\ref{fig:ensemble_d11}. Because of this,
+in the following discussion, we will compare the effects of parameter tuning
+againts this benchmark.
 
 %Equal importance to AUC, and agreement and correlation metrics. Linear combination
-
-\begin{figure}[!ht]
-	\centering
-	\includegraphics[width=.5\textwidth]{\imgspath/ensemble_stats_d0.png}
-	\caption{Performance of the ensemble of neural networks with $0$ Dropout rate}
-	\label{fig:dropout_0}
-\end{figure}
-
-\begin{figure}[!ht]
-	\centering
-	\includegraphics[width=.5\textwidth]{\imgspath/ensemble_stats_d22.png}
-	\caption{Performance of the ensemble of neural networks with initial Dropout rate of $22$}
-	\label{fig:dropout_22}
-\end{figure}
-
-\begin{figure}[!ht]
-	\centering
-	\includegraphics[width=.5\textwidth]{\imgspath/ensemble_stats_d22_7.png}
-	\caption{Performance of the ensemble of neural networks with heterogeneous Dropout rate of $22, 14.5 and 7$ }
-	\label{fig:dropout_22_7}
-\end{figure}
-
-Given these static settings, we first experimented with different Dropout rates during the ensemble phase.  The rates tested were $0, 7, 11, and 22$. Each initial rate was reduced at consecutive hidden layers at a rate of $2$. For example, if an initial rate of $22$ was provided, subsequent layers had rates of $20, 18$ and so on. A special heterogeneous case was tested with rates $22, 14.5$ and $7$ applied to the dynamic layers.
-
-Figures~\ref{fig:dropout_0} and ~\ref{fig:dropout_22} show the results from the two extreme values of Dropout rates in our experimentation, with the x-axis representing the number of epochs and the y-axis reflecting the accuracy achieved. On the one hand, not having Dropout leads to divergence in accuracy between training and testing sets. On the other hand, a rate as high as $22$ reduces the gap. This enhances the importance of avoiding overfitting.
-
-As for the difference between homogeneous and heterogeneous rates throughout the network, Figure~\ref{fig:dropout_22_7} shows that both settings have similar behaviors, with no significant improvement on introducing heterogeneity. As a result, we realize that fine tuning on Dropout rates is not necessary.
-
-\begin{figure}[!ht]
-	\centering
-	\includegraphics[width=.5\textwidth]{\imgspath/transductor_stats_pt1.png}
-	\caption{Performance of the ensemble of neural networks with homogeneous Dropout rate of $22$}
-	\label{fig:transductor_1}
-\end{figure}
-
-\begin{figure}[!ht]
-	\centering
-	\includegraphics[width=.5\textwidth]{\imgspath/transductor_stats_pt30.png}
-	\caption{Performance of the ensemble of neural networks with heterogeneous Dropout rate of $22, 14.5 and 7$ }
-	\label{fig:transductor_30}
-\end{figure}
-
-Secondly, we tested the length of pre-training for the transductor phase. To do so, the number of epochs for pre-training ranged within $1, 10, 20$ and $30$.
-
-Figures~\ref{fig:transductor_1} and \ref{fig:transductor_30} show the contributions of the AUC, agreement metric (KS), correlation metric (CVM) have to the aggregated loss function against the iterations of minimization. No evidence for significant improvement is detected when increasing the length of pre-training, however, no conclusion can be reached and further experimentation might be needed.
 
 \begin{figure}[!ht]
 	\centering
@@ -379,6 +355,55 @@ Figures~\ref{fig:transductor_1} and \ref{fig:transductor_30} show the contributi
 
 \begin{figure}[!ht]
 	\centering
+	\includegraphics[width=.5\textwidth]{\imgspath/ensemble_stats_d0.png}
+	\caption{Performance of the ensemble of neural networks without dropout.}
+	\label{fig:dropout_0}
+\end{figure}
+
+\begin{figure}[!ht]
+	\centering
+	\includegraphics[width=.5\textwidth]{\imgspath/ensemble_stats_d22.png}
+	\caption{Performance of the ensemble of neural networks with dropout rates of 22\%, 20\% and 18\%.}
+	\label{fig:dropout_22}
+\end{figure}
+
+\begin{figure}[!ht]
+	\centering
+	\includegraphics[width=.5\textwidth]{\imgspath/ensemble_stats_d22_7.png}
+	\caption{Performance of the ensemble of neural networks with dropout rates of 22\%, 14.5\% and 7\%.}
+	\label{fig:dropout_22_7}
+\end{figure}
+
+\begin{figure}[!ht]
+	\centering
+	\includegraphics[width=.5\textwidth]{\imgspath/ensemble_stats_d7.png}
+	\caption{Performance of the ensemble of neural networks with dropout rates of 7\%, 5\% and 3\%.}
+	\label{fig:dropout_7}
+\end{figure}
+
+Given these static settings, we first experimented with different Dropout rates
+during the ensemble phase. The rates tested were 0\%, 7\%, 11\%, and 22\%. Each
+initial rate was reduced at consecutive hidden layers at a rate of $2$. For
+example, if an initial rate of $22$ was provided, subsequent layers had rates of
+$20, 18$ and so on. A special case was tested with rates $22, 14.5$ and $7$.
+
+Figures~\ref{fig:dropout_0} and ~\ref{fig:dropout_22} show the results from the
+two extreme values of Dropout rates in our experimentation, with the x-axis
+representing the number of epochs and the y-axis reflecting the accuracy
+achieved. On the one hand, not having Dropout leads to overfitting on the
+training set, as expected. On the other hand, a rate as high as 22\% reduces
+overfitting but also slows down learning substansitally. If we try to extend the
+range of rates among the hidden layers, as in Figure~\ref{fig:dropout_22_7}, we
+do not see any significant change respect to the results of
+Figure~\ref{fig:dropout_22}. By setting the dropout rates too low, as in
+Figure~\ref{fig:dropout_7}, overfitting is prevented, the learning speed is
+acceptable but the accuracy on the validation data had high standard deviation
+and drops quickly as the accuracy on the training set rises. By increasing it to
+11\%, 9\% and 7\%, as in Figure~\ref{fig:ensemble_d11}, we are able to obtain
+more stable results.
+
+\begin{figure}[!ht]
+	\centering
 	\includegraphics[width=.5\textwidth]{\imgspath/ensemble_stats_d11_adadelta.png}
 	\caption{Performance of the ensemble of neural networks with the parameters
 	described in Section~\ref{sec:system_design}, a cross-entropy loss function
@@ -386,14 +411,16 @@ Figures~\ref{fig:transductor_1} and \ref{fig:transductor_30} show the contributi
 	\label{fig:ensemble_d11_adadelta}
 \end{figure}
 
-Lastly, we experimented with changing the optimization algorithm used to train the model. Figure~\ref{fig:ensemble_d11} shows the performance of the ensemble of models
-using the RMSProp algorithm, as described in Section \ref{sec:system_design}. In
-Figure~\ref{fig:ensemble_d11_adadelta} instead we present the results for the
-ADADELTA optimizer \cite{zeiler2012adadelta}. It is easy to see that the RMSProp
-implementation outperforms ADADELTA on the training set, reaching higher
-accuracy. The variance of the accuracy on the validation set is higher for
-RMSProp which is probably a good thing for this kind of task, but more
-noticeably, it does not degrade as fast as for the ADADELTA optimizer.
+Secondly, we experimented with changing the optimization algorithm and loss
+function used to train the model. Figure~\ref{fig:ensemble_d11} shows the
+performance of the ensemble of models using the RMSProp algorithm, as described
+in Section \ref{sec:system_design}. In Figure~\ref{fig:ensemble_d11_adadelta}
+instead we present the results for the ADADELTA optimizer
+\cite{zeiler2012adadelta}. It is easy to see that the RMSProp implementation
+outperforms ADADELTA on the training set, reaching higher accuracy. The variance
+of the accuracy on the validation set is higher for RMSProp which is probably a
+good thing for this kind of task, but more noticeably, it does not degrade as
+fast as for the ADADELTA optimizer.
 
 \begin{figure}[!ht]
 	\centering
@@ -412,20 +439,68 @@ significantly higher variance both on both data sets. However the negative slope
 of the accuracy on the validation data is higher for this metric than that for
 the cross-entropy.
 
+\begin{figure}[!ht]
+	\centering
+	\includegraphics[width=.5\textwidth]{\imgspath/transductor_stats_pt1.png}
+	\caption{Performance of the transductive neural network pre-trained for one epoch.}
+	\label{fig:transductor_1}
+\end{figure}
+
+\begin{figure}[!ht]
+	\centering
+	\includegraphics[width=.5\textwidth]{\imgspath/transductor_stats_pt30.png}
+	\caption{Performance of the transductive neural network pre-trained for 30 epochs.}
+	\label{fig:transductor_30}
+\end{figure}
+
+Lastly, we tested the numebr of epochs of pre-training for the transductor
+phase. To do so, the number of epochs for pre-training ranged within $1, 10, 20$
+and $30$. Figures~\ref{fig:transductor_1} and \ref{fig:transductor_30} show the
+loss and contributions from the AUC, agreement metric (KS), correlation metric
+(CVM) against the iterations of minimization. It is easily noticeable that the
+KS metric is the hardest to minimize and while the CVM stays around 0.001 (below
+the target value of 0.002) from the beginning of the optimization procedure. No
+evidence for significant improvement is detected when increasing the length of
+pre-training, however, no conclusion can be reached and further experimentation
+might be needed.
+
 
 \section{Results}
 \label{sec:results}
-In this Section we present the final scores and rank obtained on the test set after submission to Kaggle. 
+In this Section we present the final scores and rank obtained on the test set
+after submission to Kaggle and a discussion on the objective presented in
+Section \ref{sec:objectives}.
 
-The highest score that we registered is $0.976174$ on the public leaderboard and $0.975412$ on the private one. Over all the trials that passed the correlation and agreement tests (18 in total) the mean is $0.96984$ and the standard deviation is $0.00461$. Those results would have given us a rank in the second half of 500, between the score achieved by Hierarchical Gradient Boosting (benchmark for the competition at rank 570-571, used for actual $\tau \rightarrow 3\mu$ analysis at LHCb) with a score of $0.976709$ and Gradient Boosting (another benchmark ranked at 587-588) with a score of
-$0.971025$.
+The highest score that we registered is $0.976174$ on the public leaderboard and
+$0.975412$ on the private one. Over all the trials that passed the correlation
+and agreement tests (18 in total) the mean is $0.96984$ and the standard
+deviation is $0.00461$. Those results would have given us a rank in the second
+half of 500, between the score achieved by Hierarchical Gradient Boosting
+(benchmark for the competition at rank 570-571, used for actual $\tau
+\rightarrow 3\mu$ analysis at LHCb) with a score of $0.976709$ and Gradient
+Boosting (another benchmark ranked at 587-588) with a score of $0.971025$.
 
-- objective not achieved. No comparable performance achieved
+With regards to the objective of building a classifier for this task that could
+compete with other models that make use of domain knowledge on particle physics,
+we cannot say that we achieved the objective, but as already pointed out, our
+model proved capable of reaching benchmarking levels (altough we don't know if
+those benchmarks make use of domain knowledge or not). In spite of this we are
+happy with the results achieved. Moreover we feel that our second objective has
+been has been fully accomplished thanks to the modest experimentation presented
+in Section \ref{sec:experiment} and we feel that our understanding of ensemble
+models and transfer learning has grown bigger.
 
 
 \section{Conclusion}
 \label{sec:conclusion}
-DOmain knowledge is valuable and sometimes needed. Blind mining lead to good results but no understanding.
+Our conclusion is that domain knowledge is a valuable resource and that feature
+engineering is a really valuable resource to improve performance of a model. The
+model that we have buit tries to learn new features and so a new representation
+of the data with a first step of ensemble learning. Then a phase of transfer
+learning is applied in order to optimize a model (with the learned new features)
+and pass the two additional tests of this Kaggle competition: the agreement test
+(via Kolmogorov-Smirnov test) and the correlation test (via Cramer-von Mises
+test).
 
 \clearpage
 \appendix
@@ -494,6 +569,6 @@ Follows a list of available features for training:
 	\item \texttt{signal}~-- is the target variable to predict.
 \end{itemize}
 
-%\printbibliography
+\printbibliography
 
 \end{document}
