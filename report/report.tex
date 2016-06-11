@@ -84,12 +84,12 @@ We believe that data mining is powerful enough to achieve comparable performance
 Our hypothesis is that by investing enough time in experimenting and fine tuning our model, a competitive score can be achieved. We measure the competitiveness by Kaggle's ranking system, and expect to rank among the top five competitors.
 
 \subsection{Contribution}
-Although perfect score has already been achieved in this competition, the use of domain knowledge was crucial for it. Thus the main contribution of this paper is to prove that advance data mining techniques can alleviate our score to the one that the winners accomplished.
+Although perfect score has already been achieved in this competition, the use of domain knowledge was crucial for it. Thus the main contribution of this paper is to prove that advanced data mining techniques can give us a score close to the one that the winners accomplished.
 
 Furthermore, if our hypothesis proves to be correct, this work could be a stepping stone for applying data mining techniques in complex domains where knowledge is incomplete or uncertain. It could show the potential of data mining, by discovering patterns and insights, to boost scientific advances.
 
 \subsection{Organization}
-This project follows the Cross Industry Standard Process for Data Mining (CRISP-DT) Framework. As such, this paper's sections correspond to the six phases of the process model.
+This project follows the Cross Industry Standard Process for Data Mining (CRISP-DM) Framework \cite{shearer2000crisp}. As such, this paper's sections correspond to the six phases of the process model.
 
 Section ~\ref{sec:intro} has introduced some Business Understanding related to High Energy Physics, specifically the need for proving the violation of charged lepton flavour. Furthermore, Section~\ref{sec:related_work} explores different existing data mining approaches of Kaggle top competitors. We continue to gain some Data Understanding by describing the dataset and the competition tools and regulations in Section~\ref{sec:dataset}. The Data Preparation and Modeling steps are outlined in Section~\ref{sec:system_design}, where the data is cleaned and the model implementation is described. To Evaluate the classifier, we set up several experiments as depicted in Sections~\ref{sec:experiment} and ~\ref{sec:results}. Finally, Section~\ref{sec:conclusion} summarizes our observations throughout the process.
 
@@ -107,7 +107,7 @@ Secondly, in order to significantly reduce the Mass correlation error, Mironov a
 
 It is worth mentioning that the participants experimented with other configurations such as increasing the number of layers and neurons, however no significant changes in Area Under Curve were observed.
 
-\subsection{Transfer learning solution}
+\subsection{Transfer Learning Solution}
 The fifth ranked solution was submitted by Alexander Rakhlin and was based on transfer learning. This method assumes training and test data differ in some ways, a property extremely important for this competition. Furthermore, transfer learning does not require any prior domain knowledge but rather trains a model on a dataset and then applies the learned patterns to a different related one. This is a fundamental difference from the winners' solution, since the model is not tailored to the Physics domain and their features are not manually engineered.
 
 A second highlight of this solution is the concept of ensemble neural networks. By combining the output of a large enough number of networks, a robust classifier is built. Furthermore, different from other solutions that output a result and then hope to pass the competition's tests, this model incorporates the three metrics (AUC and the agreement and correlation metrics) into the networks loss function. This ensures all of them are satisfied as result of statistical inference and not by coincidence.
@@ -115,7 +115,7 @@ A second highlight of this solution is the concept of ensemble neural networks. 
 \section{The Dataset}
 \label{sec:dataset}
 Given data from the Large Hadron Collider (LHC), proving the violation of the charged lepton flavour translates into a boolean classification task that determines the presence for the variable \textit{signal}.  The data has been collected directly at the
-LHC during experiments with high energy particles collisions. The dataset consists of a collection of collision events and their properties. The objective of the competition is to predict whether a $\tau \rightarrow 3\mu$ decay (the one that identifies a lepton flavour) was present in the collision.
+LHC during experiments with high energy particles collisions. The dataset consists of a collection of collision events and their properties. The objective of the competition is to predict whether a $\tau \rightarrow 3\mu$ decay (the one that identifies a lepton flavour) was present in the collision. The submission file must contain two columns: the ID of the test case and the probability of the test case being a signal.
 
 The competition provides a training and a test set, files to apply the agreement and correlation tests, as well as a format for submissions. A Starter Kit \footnote{\url{https://github.com/yandexdataschool/flavours-of-physics-start}} for different programming languages was made available, and the evaluation of them could only be done through the Kaggle platform.
 
@@ -316,8 +316,8 @@ probabilities are required).
 \section{Experimental Set-up and Evaluation}
 \label{sec:experiment}
 To evaluate and exploit the system proposed, different optimization algorithms,
-dropout rates and pre-trained epochs were tested. However, during all of these
-we kept some parameters statics.
+dropout rates and number of pre-trainining epochs were tested. However, during
+all of these we kept some parameters fixed.
 
 First and foremost, during the ensemble stage we keep a constant number of $20$
 neural network models trained for 75 epochs. The structure of each network is as
@@ -501,6 +501,14 @@ learning is applied in order to optimize a model (with the learned new features)
 and pass the two additional tests of this Kaggle competition: the agreement test
 (via Kolmogorov-Smirnov test) and the correlation test (via Cramer-von Mises
 test).
+
+Moreover, the numeber of hyperparameters of this model is high and we tested
+only a fraction of those that seemed to have more effect on the performances of
+the model. We think that testing of other parameters such as the number of
+networks used or the number of epochs of training in the first stage or even try
+other ensemble techniques such as boosting might give extra insights on how
+ensemble of neural networks could be used to apply transfer learning.
+
 
 \clearpage
 \appendix
